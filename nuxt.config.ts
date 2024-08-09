@@ -13,7 +13,15 @@ export default defineNuxtConfig({
   primevue: {
     options: {
       unstyled: true,
+      theme: {
+        options: {
+          cssLayer: {
+            name: "primevue",
+            order: "tailwind-base, primevue, tailwind-utilities",
+          },
+        },
+      },
     },
-    importPT: { as: 'Aura', from: '~/presets/aura' },
+    importPT: { as: "Aura", from: "~/presets/aura" },
   },
 });
