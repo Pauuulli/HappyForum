@@ -10,7 +10,14 @@ export default {
     "./presets/**/*.{js,vue,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        male: "#2574A9",
+        female: "#CF000F",
+        secondary: "#AAAAAA",
+      },
+    },
   },
   plugins: [require("tailwindcss-primeui")],
+  darkMode: ["selector", '[class*="p-dark"]'],
 };

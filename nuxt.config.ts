@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { AppPreset } from "./presets/app-preset";
+
 export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   devtools: { enabled: true },
@@ -9,15 +11,18 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  modules: ["@primevue/nuxt-module"],
+  routeRules: {
+    '/': {redirect: '/category/1'}
+  },
+  modules: ["@primevue/nuxt-module", "@pinia/nuxt"],
   primevue: {
     options: {
-      unstyled: true,
       theme: {
+        preset: AppPreset,
         options: {
           cssLayer: {
             name: "primevue",
-            order: "tailwind-base, primevue, tailwind-utilities",
+            order: "tailwind-base, primevue, primeIcon, tailwind-utilities",
           },
         },
       },

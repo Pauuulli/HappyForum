@@ -1,7 +1,11 @@
+<script setup lang="ts">
+</script>
+
 <template>
-    <AppNav />
-    <main>
-        <slot />
-    </main>
-    <AppFooter/>
+  <AppMenu />
+  <main class="pb-12">
+    <slot />
+  </main>
+  <AppFooter />
+  <DialogLogin />
 </template>
