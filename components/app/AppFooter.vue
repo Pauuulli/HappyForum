@@ -5,12 +5,12 @@
 // const emit = defineEmits<{
 //   (e: "open-menu"): void;
 // }>();
-const { appMenuVisible } = storeToRefs(useAppStore());
+const { isAppMenuVisible } = storeToRefs(useAppStore());
 
 const buttons = [
   {
     icon: "pi-bars",
-    action: () => (appMenuVisible.value = true),
+    action: () => (isAppMenuVisible.value = true),
   },
   {
     icon: "pi-refresh",

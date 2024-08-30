@@ -15,7 +15,7 @@ const app = useAppStore();
   <NuxtLink
     :to="href"
     class="flex items-center gap-6 text-lg transition-colors hover:text-yellow-400 cursor-pointer"
-    @click="app.appMenuVisible = !app.appMenuVisible"
+    @click="app.isAppMenuVisible = !app.isAppMenuVisible"
   >
     {{ text }}
   </NuxtLink>

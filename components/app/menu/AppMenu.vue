@@ -3,7 +3,7 @@
 
 const ANIMATION_DURATION = 300;
 
-const { appMenuVisible: visible } = storeToRefs(useAppStore());
+const { isAppMenuVisible: visible } = storeToRefs(useAppStore());
 const _visible = ref(false);
 const _interactable = ref(false);
 
@@ -46,5 +46,6 @@ watchEffect(() => {
       </aside>
       <AppMenuNav class="grow" />
     </article>
+    <AppMenuUserDialog />
   </div>
 </template>

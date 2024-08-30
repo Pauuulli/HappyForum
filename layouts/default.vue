@@ -7,5 +7,5 @@
     <slot />
   </main>
   <AppFooter />
-  <DialogLogin />
+  <AppLoading />
 </template>
