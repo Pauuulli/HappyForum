@@ -12,6 +12,11 @@
   "dependencies": {
     "@pinia/nuxt": "^0.5.3",
     "@primevue/themes": "^4.0.4",
+    "@vee-validate/nuxt": "^4.13.2",
+    "@vee-validate/yup": "^4.13.2",
+    "bcrypt": "^5.1.1",
+    "dayjs": "^1.11.13",
+    "jose": "^5.8.0",
     "nuxt": "^3.12.4",
     "pg": "^8.12.0",
     "pinia": "^2.2.1",
@@ -22,6 +27,7 @@
   },
   "devDependencies": {
     "@primevue/nuxt-module": "^4.0.4",
+    "@types/bcrypt": "^5.0.2",
     "@types/pg": "^8.11.8",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.41",

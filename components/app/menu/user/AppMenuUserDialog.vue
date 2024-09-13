@@ -8,13 +8,18 @@ const step = ref<0 | 1>(0);
   <Dialog
     v-model:visible="appStore.dialogLoginVisible"
     modal
-    :header="step == 0 ? 'Login' : 'Sign Up'"
+    class="!overflow-hidden"
     :style="{ width: '336px' }"
+    pt:content:class="overflow-hidden"
+    @hide="step = 0"
   >
-    <Transition mode="out-in">
-      <AppMenuUserLogin v-if="step == 0" @signup="step = 1" />
-      <AppMenuUserRegister v-else="step == 1" @cancel="step = 0" />
-    </Transition>
+    <template #header>
+      <Transition mode="out-in">
+        <span v-if="step == 0" class="text-xl font-semibold">Login</span>
+        <span v-else class="text-xl font-semibold">Sign Up</span>
+      </Transition>
+    </template>
+    <AppMenuUserForm v-model:step="step" />
   </Dialog>
 </template>
 

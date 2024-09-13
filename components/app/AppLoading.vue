@@ -9,7 +9,7 @@ watch(isAppLoadingVisible, () => {
 <template>
   <div
     v-if="isAppLoadingVisible"
-    class="flex h-screen w-screen items-center justify-center"
+    class="fixed left-0 top-0 z-[9999] flex h-screen w-screen items-center justify-center bg-gray-400/30"
   >
     <ProgressSpinner
       style="width: 50px; height: 50px"

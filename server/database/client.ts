@@ -1,21 +1,35 @@
 import pg from "pg";
 
-const { Client } = pg;
-const client = new Client({
+const { Pool } = pg;
+const pool = new Pool({
   user: "postgres",
   password: "541455",
   host: "localhost",
   port: 5432,
   database: "PaulGorForum",
 });
+//const client = new Client();
 
-client
-  .connect()
-  .then(() => {
-    console.log("Connected to PostgreSQL database");
-  })
-  .catch((err: any) => {
-    console.error("Error connecting to PostgreSQL database", err);
-  });
+// try{
+//   await client.connect();
+//   console.log("Connected to PostgreSQL database");
+// }
+// catch(e){
+//   console.error("Error connecting to PostgreSQL database", e);
+// }
 
-export { client };
+// function runQuery(qstr: string){
+//   return new Promise<{rows: any}>((rsv, rjt) =>
+//     client.query(qstr, (err: any, result: { rows: any }) => {
+//       if (err) {
+//         console.error("Error executing query", err);
+//         rjt(new Error("Query Error"));
+//       } else {
+//         console.log("Query result:", result.rows);
+//         rsv(result);
+//       }
+//     }),
+//   );
+// }
+
+export { pool };

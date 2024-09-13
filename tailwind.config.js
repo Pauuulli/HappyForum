@@ -15,6 +15,7 @@ export default {
         male: "#2574A9",
         female: "#CF000F",
         secondary: "#AAAAAA",
+        alert: '#ef4444',
       },
     },
   },
