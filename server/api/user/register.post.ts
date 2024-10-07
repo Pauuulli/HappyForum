@@ -36,7 +36,8 @@ export default eventHandler<{
 });
 
 async function registerNewUser(params: SignupBody) {
-  const { name, password, email } = params;
+  let { name, password, email } = params;
+  email = email.toLowerCase();
   const passwordHash = await hashPassword(password);
   const text = `
    INSERT INTO users(name, password, email, created_at)
