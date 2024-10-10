@@ -1,6 +1,7 @@
 import { authEventHandler } from "~/server/util/auth-handler";
 import { object, number } from "yup";
 import { pool } from "~/server/database/client";
+import { handleQueryError } from "~/server/database/error-handler";
 
 interface Vote {
   userId: number;
@@ -10,7 +11,11 @@ interface Vote {
 
 export default authEventHandler(async (evt) => {
   const vote = await readValidatedBody(evt, validateVote);
-  await createNewVote(vote);
+  try{
+    await createNewVote(vote);
+  }catch(e){
+    handleQueryError(e);
+  }
   setResponseStatus(evt, 201);
 });
 

@@ -3,7 +3,7 @@ import { object, string } from "yup";
 import bcrypt from "bcrypt";
 import { handleQueryError } from "~/server/database/error-handler";
 
-interface SignupBody {
+interface User {
   name: string;
   password: string;
   email: string;
@@ -12,50 +12,36 @@ interface SignupBody {
 export default eventHandler<{
   body: { name: string; password: string; email: string };
 }>(async (event) => {
-  const result = await readValidatedBody(event, validateData);
-  if (!result.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Validation failed",
-    });
+  const user = await readValidatedBody(event, validateData);
+
+  try {
+    const userId = await registerNewUser(user);
+    setResponseStatus(event, 201);
+    return { userId };
+  } catch (e) {
+    handleQueryError(e);
   }
-  const reqBody = result.body!;
-
-  const isFieldsUnique = await validateUniqueFields(reqBody);
-  if (!isFieldsUnique)
-    throw createError({
-      statusCode: 409,
-      statusMessage: "The username or email already exists.",
-    });
-
-  const success = await registerNewUser(reqBody);
-  if (!success) throw createError({});
-
-  setResponseStatus(event, 201);
-  return "success";
 });
 
-async function registerNewUser(params: SignupBody) {
+async function registerNewUser(params: User) {
   let { name, password, email } = params;
   email = email.toLowerCase();
   const passwordHash = await hashPassword(password);
   const text = `
    INSERT INTO users(name, password, email, created_at)
-   VALUES($1, $2, $3, $4);
+   VALUES($1, $2, $3, $4)
+   RETURNING user_id;
   `;
 
-  try {
-    await pool.query(text, [
-      name,
-      passwordHash,
-      email,
-      new Date().toISOString(),
-    ]);
-    return true;
-  } catch (e) {
-    handleQueryError(e);
-    return false;
-  }
+  const {
+    rows: [{ user_id }],
+  } = await pool.query(text, [
+    name,
+    passwordHash,
+    email,
+    new Date().toISOString(),
+  ]);
+  return user_id;
 }
 
 async function validateData(reqBody: unknown) {
@@ -71,27 +57,13 @@ async function validateData(reqBody: unknown) {
   try {
     await schema.validate(reqBody);
   } catch (e: any) {
-    return { success: false, errors: e.errors };
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Invalid Data: ${e}`,
+    });
   }
 
-  return { success: true, body: reqBody as SignupBody };
-}
-
-async function validateUniqueFields(params: SignupBody) {
-  const { name, email } = params;
-  const query = `
-  SELECT name
-  FROM users
-  WHERE name = $1 OR email = $2;
-  `;
-
-  try {
-    const { rows } = await pool.query(query, [name, email]);
-    return !(rows.length > 0);
-  } catch (e) {
-    handleQueryError(e);
-    return false;
-  }
+  return reqBody as User;
 }
 
 async function hashPassword(password: string) {

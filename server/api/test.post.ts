@@ -1,5 +1,8 @@
-export default eventHandler(async (evt) => {
-  console.log("Hi");
+import { pool } from "../database/client";
+import path from "node:path"
 
-  return 'Hi';
+export default eventHandler(async (evt) => {
+  
+
+  return path.join('','statments', 'abc/cds');
 });
