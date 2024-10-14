@@ -1,11 +1,13 @@
-import { pool } from "../database/client";
+import { PaginatedData } from "~/models/pagination";
+import { pool } from "./database/client";
+import { objectKeySnakeToCamel } from "./key-transformer";
 
 export async function getPaginatedData(
   query: string,
   pageSize: number,
   currentPage: number,
   params?: any[],
-) {
+): Promise<PaginatedData<any[]>> {
   const client = await pool.connect();
 
   try {
@@ -14,7 +16,7 @@ export async function getPaginatedData(
     `);
 
     await client.query(
-    `
+      `
       CREATE TEMPORARY TABLE temp AS
       ${query}  
     `,
@@ -37,7 +39,7 @@ export async function getPaginatedData(
       `);
 
     return {
-      data,
+      data: data.map((d) => objectKeySnakeToCamel(d)),
       pagination: {
         currentPage,
         totalPages: Math.ceil(count / pageSize),

@@ -1,6 +1,6 @@
 import { object, string, number } from "yup";
-import { pool } from "~/server/database/client";
-import { authEventHandler } from "~/server/util/auth-handler";
+import { pool } from "~/server/utils/database/client";
+import { authEventHandler } from "~/server/utils/auth-handler";
 
 interface Comment {
   userId: number;

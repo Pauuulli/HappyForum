@@ -1,6 +1,6 @@
 import { checkIsAuthed } from "~/server/auth";
 import { object, string, number } from "yup";
-import { pool } from "~/server/database/client";
+import { pool } from "~/server/utils/database/client";
 
 interface Post {
   title: string;

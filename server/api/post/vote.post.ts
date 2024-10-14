@@ -1,6 +1,6 @@
-import { authEventHandler } from "~/server/util/auth-handler";
+import { authEventHandler } from "~/server/utils/auth-handler";
 import { object, number } from "yup";
-import { pool } from "~/server/database/client";
+import { pool } from "~/server/utils/database/client";
 
 interface Vote {
   userId: number;

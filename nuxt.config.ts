@@ -14,11 +14,7 @@ export default defineNuxtConfig({
   routeRules: {
     "/": { redirect: "/category/1" },
   },
-  modules: [
-    "@primevue/nuxt-module",
-    "@pinia/nuxt",
-    "@vee-validate/nuxt",
-  ],
+  modules: ["@primevue/nuxt-module", "@pinia/nuxt", "@vee-validate/nuxt"],
   primevue: {
     options: {
       theme: {

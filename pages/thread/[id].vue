@@ -1,9 +1,9 @@
 <script setup lang="ts">
-definePageMeta({
-  validate: async (route) => {
-    return route.params.id == '123';
-  }
-})
+// definePageMeta({
+//   validate: async (route) => {
+//     return route.params.id == '123';
+//   }
+// })
 
 </script>
 

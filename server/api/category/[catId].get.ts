@@ -1,6 +1,6 @@
 import { COMMENTS_PER_PAGE } from "~/server/config/comment/list";
 import { POSTS_PER_PAGE } from "~/server/config/post/list";
-import { getPaginatedData } from "~/server/util/pagination";
+import { objectKeySnakeToCamel } from "~/server/utils/key-transformer";
 
 export default eventHandler(async (evt) => {
   const catId = getRouterParam(evt, "catId");
@@ -17,8 +17,8 @@ export default eventHandler(async (evt) => {
   async function sortByLastReply() {
     const postListQry = `
     SELECT 
-      p.post_id, 
-      p.title, 
+      p.post_id post_id, 
+      p.title title, 
       u.name publisher, 
       COALESCE(MAX(cmt.created_at), p.created_at) replied_at, 
       SUM(
@@ -47,6 +47,11 @@ export default eventHandler(async (evt) => {
     `;
     const bindings = catId ? [catId] : undefined;
 
-    return await getPaginatedData(postListQry, POSTS_PER_PAGE, page, bindings);
+    return await getPaginatedData(
+      postListQry,
+      POSTS_PER_PAGE,
+      page,
+      bindings,
+    );
   }
 });

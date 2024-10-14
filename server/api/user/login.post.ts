@@ -1,7 +1,7 @@
 import { object, string } from "yup";
 import bcrypt from "bcrypt";
-import { pool } from "~/server/database/client";
-import { handleQueryError } from "~/server/database/error-handler";
+import { pool } from "~/server/utils/database/client";
+import { handleQueryError } from "~/server/utils/database/error-handler";
 import { setJwtCookies } from "~/server/auth";
 
 interface SigninBody {

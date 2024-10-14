@@ -1,7 +1,7 @@
-import { pool } from "~/server/database/client";
+import { pool } from "~/server/utils/database/client";
 import { object, string } from "yup";
 import bcrypt from "bcrypt";
-import { handleQueryError } from "~/server/database/error-handler";
+import { handleQueryError } from "~/server/utils/database/error-handler";
 
 interface User {
   name: string;

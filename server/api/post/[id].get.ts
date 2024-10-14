@@ -1,5 +1,4 @@
 import { COMMENTS_PER_PAGE } from "~/server/config/comment/list";
-import { getPaginatedData } from "~/server/util/pagination";
 
 export default eventHandler(async (evt) => {
   const postId = getRouterParam(evt, "id");

@@ -1,8 +1,9 @@
-import { pool } from "../database/client";
+import { pool } from "../utils/database/client";
 import path from "node:path"
+import { objectKeySnakeToCamel } from "../utils/key-transformer";
 
 export default eventHandler(async (evt) => {
   
 
-  return path.join('','statments', 'abc/cds');
+  return objectKeySnakeToCamel({_happy_at_123_: 1})
 });
