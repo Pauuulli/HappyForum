@@ -1,9 +1,15 @@
 import { pool } from "../utils/database/client";
-import path from "node:path"
-import { objectKeySnakeToCamel } from "../utils/key-transformer";
+import path from "node:path";
+import { objectKeyToCamel } from "../utils/key-transformer";
+import { object, string, number, array } from "yup";
 
 export default eventHandler(async (evt) => {
-  
-
-  return objectKeySnakeToCamel({_happy_at_123_: 1})
+  const schema = object({
+    a: string().matches(/^-?(abc|123)$/),
+    b: array(string()).transform((v: string | string[]) => {
+      const sortArr = typeof v == "string" ? v.split(",") : v;
+      return sortArr.map((elem) => (elem[0] == "-" ? `${elem.slice(1)} DESC` : elem));
+    }),
+  });
+  return await schema.validate({});
 });

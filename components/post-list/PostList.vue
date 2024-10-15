@@ -13,6 +13,7 @@ const postList = computed<Post[] | undefined>(() =>
     ...postApi,
     repliedAt: dayjs(postApi.repliedAt),
     voteDiff: Number(postApi.voteDiff),
+    totalPages: Number(postApi.totalPages)
   })),
 );
 </script>

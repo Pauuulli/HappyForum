@@ -2,9 +2,13 @@
 import dayjs from "dayjs";
 import type { Post } from "~/models/post";
 
+const router = useRouter();
+
 const props = defineProps<{
   post: Post;
 }>();
+
+const page = ref(props.post.totalPages);
 
 const displayDate = computed(() => {
   const repliedAt = props.post.repliedAt;
@@ -24,6 +28,19 @@ const displayDate = computed(() => {
     return repliedAt.format("DD/MM/YYYY");
   }
 });
+
+const pageOpts = computed(() => {
+  const result = [];
+  for (let i = 0; i < props.post.totalPages; ++i) result.push(i + 1);
+  return result;
+});
+
+function onPageSelect(page: number) {
+  router.push({
+    path: `/thread/${props.post.postId}`,
+    query: { page },
+  });
+}
 </script>
 
 <template>
@@ -41,7 +58,13 @@ const displayDate = computed(() => {
           ><i class="pi pi-thumbs-up-fill mr-1 !text-xs"></i
           >{{ post.voteDiff }}</span
         >
-        <Select class="h-6 w-16" />
+        <Select
+          :options="pageOpts"
+          :placeholder="`Page ${post.totalPages}`"
+          class="h-10"
+          @click.prevent
+          @update:model-value="onPageSelect"
+        />
       </aside>
       <div class="flex items-center gap-2">
         <!--

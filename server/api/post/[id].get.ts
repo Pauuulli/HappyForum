@@ -1,19 +1,31 @@
 import { COMMENTS_PER_PAGE } from "~/server/config/comment/list";
+import { object, string, number, InferType } from "yup";
+import { querySchema } from "~/server/schema/query";
 
 export default eventHandler(async (evt) => {
   const postId = getRouterParam(evt, "id");
 
-  const urlQuery: Record<string, string> = getQuery(evt);
-  const page = isNaN(+urlQuery.page) ? 0 : parseInt(urlQuery.page);
-  const urlSort = urlQuery.sort;
+  const postQry = `
+    SELECT
+      u.name publisher,
+      p.created_at
+      p.content,
+      SUM(CASE WHEN pv.is_up THEN 1 ELSE 0 END) up_votes,
+      SUM(CASE WHEN NOT pv.is_up THEN 1 ELSE 0 END) down_votes
+  `;
 
-  const sort = getSort(urlSort);
+  const { page, sort: rawSort } = await getValidatedQuery<
+    InferType<typeof querySchema>
+  >(evt, querySchema.validate);
 
-  const qry = `
+  const [field, order] = rawSort?.[0] ?? [];
+  const sort = field == "vote_diff" ? `${field} ${order}` : "created_at";
+
+  const cmtQry = `
     SELECT
         c.comment_id id,
         u.name publisher,
-        c.created_at createdAt,
+        c.created_at created_at,
         c.content,
         SUM(CASE WHEN cv.is_up THEN 1 ELSE 0 END) up_votes,
         SUM(CASE WHEN NOT cv.is_up THEN 1 ELSE 0 END) down_votes,
@@ -31,15 +43,15 @@ export default eventHandler(async (evt) => {
         u.name,
         c.created_at,
         c.content
-    ORDER BY ${sort.column} ${sort.mode};
+    ORDER BY ${sort};
   `;
 
-  return await getPaginatedData(qry, COMMENTS_PER_PAGE, page);
+  return await getPaginatedData(cmtQry, COMMENTS_PER_PAGE, page);
 });
 
 function getSort(urlSort: string | undefined) {
   let mode = "";
-  let column = "c.created_at";
+  let column = "created_at";
   if (urlSort != null) {
     let tempSort = urlSort;
     if (tempSort[0] == "-") {

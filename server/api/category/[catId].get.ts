@@ -1,6 +1,6 @@
 import { COMMENTS_PER_PAGE } from "~/server/config/comment/list";
 import { POSTS_PER_PAGE } from "~/server/config/post/list";
-import { objectKeySnakeToCamel } from "~/server/utils/key-transformer";
+import { objectKeyToCamel } from "~/server/utils/key-transformer";
 
 export default eventHandler(async (evt) => {
   const catId = getRouterParam(evt, "catId");

@@ -1,6 +1,6 @@
 import { PaginatedData } from "~/models/pagination";
-import { pool } from "./database/client";
-import { objectKeySnakeToCamel } from "./key-transformer";
+import { pool } from "./client";
+import { objectKeyToCamel } from "../key-transformer";
 
 export async function getPaginatedData(
   query: string,
@@ -39,7 +39,7 @@ export async function getPaginatedData(
       `);
 
     return {
-      data: data.map((d) => objectKeySnakeToCamel(d)),
+      data: data.map((d) => objectKeyToCamel(d)),
       pagination: {
         currentPage,
         totalPages: Math.ceil(count / pageSize),
