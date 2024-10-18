@@ -29,7 +29,7 @@ const appStore = useAppStore();
         <i class="pi pi-clock"></i>
         History
       </button>
-      <button class="button mt-2" @click="appStore.dialogLoginVisible = true">
+      <button class="button mt-2" @click="appStore.loginDialogVisible = true">
         <i class="pi pi-user"></i>
         Login
       </button>

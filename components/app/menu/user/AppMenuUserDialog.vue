@@ -6,7 +6,7 @@ const step = ref<0 | 1>(0);
 
 <template>
   <Dialog
-    v-model:visible="appStore.dialogLoginVisible"
+    v-model:visible="appStore.loginDialogVisible"
     modal
     class="!overflow-hidden"
     :style="{ width: '336px' }"

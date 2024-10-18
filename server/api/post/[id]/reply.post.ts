@@ -5,22 +5,24 @@ import { authEventHandler } from "~/server/utils/auth-handler";
 type Comment = InferType<typeof schema>;
 
 const schema = object({
-  userId: number().required(),
-  postId: number().required(),
   content: string().required().max(5000),
 });
 
-export default authEventHandler(async (evt) => {
-  const newComment = await readValidatedBody<Comment>(evt, (body) =>
+export default authEventHandler(async (evt, userId) => {
+  const postId = getRouterParam(evt, "id")!;
+  const { content } = await readValidatedBody<Comment>(evt, (body) =>
     schema.validate(body),
   );
-  const commentId = await createNewComment(newComment);
+  const commentId = await createNewComment(postId, content, userId);
   setResponseStatus(evt, 201);
   return { commentId };
 });
 
-async function createNewComment(cmt: Comment) {
-  const { postId, content, userId } = cmt;
+async function createNewComment(
+  postId: string,
+  content: string,
+  userId: string,
+) {
   const query = `
     INSERT INTO comments(content, user_id, post_id)
     VALUES($1, $2, $3)

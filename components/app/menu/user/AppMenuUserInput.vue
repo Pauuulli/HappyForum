@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const props = withDefaults(
   defineProps<{
     label: string;
@@ -26,11 +27,18 @@ const inputOn = {
       v-if="!isPassword"
       v-model="value"
       :id="name"
-      autocomplete="off"
+      :autocomplete="name"
       v-on="inputOn"
-       class="!w-full"
+      class="!w-full"
     />
-    <Password v-else v-model="value" :feedback="false" toggle-mask pt:pcInput:class="w-full" v-on="inputOn" />
+    <Password
+      v-else
+      v-model="value"
+      :feedback="false"
+      toggle-mask
+      pt:pcInput:class="w-full"
+      v-on="inputOn"
+    />
     <small v-show="errorMessage && meta.touched" class="text-alert">{{
       errorMessage
     }}</small>

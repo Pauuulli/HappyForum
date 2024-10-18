@@ -11,5 +11,5 @@ export default eventHandler(async (evt) => {
       return sortArr.map((elem) => (elem[0] == "-" ? `${elem.slice(1)} DESC` : elem));
     }),
   });
-  return await schema.validate({});
+  return schema.cast(null);
 });

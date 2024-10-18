@@ -4,34 +4,30 @@ import { pool } from "~/server/utils/database/client";
 import { handleQueryError } from "~/server/utils/database/error-handler";
 
 interface Vote {
-  userId: number;
-  commentId: number;
   type: 1 | 2; // 1: up, 2: down
 }
 
-export default authEventHandler(async (evt) => {
-  const vote = await readValidatedBody(evt, validateVote);
-  try{
-    await createNewVote(vote);
-  }catch(e){
+export default authEventHandler(async (evt, userId) => {
+  const commentId = getRouterParam(evt, "id")!;
+  const { type } = await readValidatedBody(evt, validateVote);
+  try {
+    await createNewVote();
+  } catch (e) {
     handleQueryError(e);
   }
   setResponseStatus(evt, 201);
-});
 
-async function createNewVote(v: Vote) {
-  const { userId, commentId, type } = v;
-  const query = `
-    INSERT INTO comment_votes (user_id, comment_id, is_up)
-    VALUES($1, $2, $3);
-    `;
-  await pool.query(query, [userId, commentId, type == 1]);
-}
+  async function createNewVote() {
+    const query = `
+      INSERT INTO comment_votes (user_id, comment_id, is_up)
+      VALUES($1, $2, $3);
+      `;
+    await pool.query(query, [userId, commentId, type == 1]);
+  }
+});
 
 async function validateVote(reqBody: unknown) {
   const schema = object({
-    userId: number().required(),
-    commentId: number().required(),
     type: number().required().min(1).max(2),
   });
   try {

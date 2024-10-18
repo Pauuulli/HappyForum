@@ -3,7 +3,11 @@
 
 const ANIMATION_DURATION = 300;
 
-const { isAppMenuVisible: visible } = storeToRefs(useAppStore());
+const { isAppMenuVisible: visible, isAppLoadingVisible } =
+  storeToRefs(useAppStore());
+const auth = useAuthStore();
+const { logout } = auth;
+const { isLoggedIn } = storeToRefs(auth);
 const _visible = ref(false);
 const _interactable = ref(false);
 
@@ -18,6 +22,16 @@ watchEffect(() => {
     nextTick(() => (_visible.value = true));
   }
 });
+
+async function onLogout() {
+  isAppLoadingVisible.value = true;
+
+  try {
+    await logout();
+  } finally {
+    isAppLoadingVisible.value = false;
+  }
+}
 </script>
 
 <template>
@@ -38,7 +52,7 @@ watchEffect(() => {
       >
         <Button icon="pi pi-android" />
         <section class="flex w-full flex-col items-center gap-2">
-          <Button icon="pi pi-android" />
+          <Button v-if="isLoggedIn" icon="pi pi-sign-out" @click="onLogout" />
           <Button icon="pi pi-android" />
           <Button icon="pi pi-android" />
           <Button icon="pi pi-android" />

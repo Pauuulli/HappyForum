@@ -13,6 +13,9 @@ interface Signup extends Login {
 
 type Fields = Login | Signup;
 
+const { loginDialogVisible } = storeToRefs(useAppStore());
+const { login } = useAuthStore();
+
 const step = defineModel("step", { required: true });
 const appStore = useAppStore();
 const { isAppLoadingVisible } = storeToRefs(appStore);
@@ -30,16 +33,19 @@ const schema = computed(() => {
 });
 const { handleSubmit, resetForm } = useForm({ validationSchema: schema });
 const onSubmit = handleSubmit((values: Fields) => {
-  if ("email" in values) signup(values);
-  else login(values);
+  if ("email" in values && values.email) signup(values);
+  else onLogin(values);
 });
 
 async function signup(reqBody: Signup) {
   isAppLoadingVisible.value = true;
-  await $fetch("/api/user/register", {
-    method: "POST",
-    body: reqBody,
-  });
+
+  try {
+    await api("/api/user/register", "POST", reqBody);
+  } finally {
+    isAppLoadingVisible.value = false;
+  }
+
   toast.add({
     severity: "success",
     summary: "Success",
@@ -47,10 +53,25 @@ async function signup(reqBody: Signup) {
     life: 3000,
   });
   onStepChange(0);
-  isAppLoadingVisible.value = false;
 }
 
-async function login(reqBody: Login) {}
+async function onLogin(reqBody: Login) {
+  isAppLoadingVisible.value = true;
+
+  try {
+    await login(reqBody.name, reqBody.password);
+  } finally {
+    isAppLoadingVisible.value = false;
+  }
+
+  toast.add({
+    severity: "success",
+    summary: "Success",
+    detail: `Welcome ${reqBody.name}`,
+    life: 3000,
+  });
+  loginDialogVisible.value = false;
+}
 
 function onStepChange(newStep: 0 | 1) {
   step.value = newStep;
@@ -59,7 +80,7 @@ function onStepChange(newStep: 0 | 1) {
 </script>
 
 <template>
-  <div>
+  <form>
     <div class="mb-4 flex flex-col gap-3">
       <AppMenuUserInput label="User Name" name="name" />
       <AppMenuUserInput label="Password" name="password" is-password />
@@ -82,7 +103,7 @@ function onStepChange(newStep: 0 | 1) {
         ></Button>
       </div>
     </Transition>
-  </div>
+  </form>
 </template>
 
 <style scoped>

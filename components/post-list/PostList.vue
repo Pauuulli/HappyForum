@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import dayjs from "dayjs";
 import type { PaginatedData } from "~/models/pagination";
-import type { Post, PostApi } from "~/models/post";
+import { object, number, array, date } from "yup";
+import type { Post } from "~/models/post-list";
+
+const schema = array(
+  object({
+    repliedAt: date(),
+    voteDiff: number(),
+    totalPages: number(),
+  }),
+);
 
 const route = useRoute();
 const catId = computed(() => route.params.id as string);
-const { data } = await useFetch<PaginatedData<PostApi[]>>(
+const { data } = await useFetch<PaginatedData<any[]>>(
   `/api/category/${catId.value}`,
 );
-const postList = computed<Post[] | undefined>(() =>
-  data.value?.data.map((postApi) => ({
-    ...postApi,
-    repliedAt: dayjs(postApi.repliedAt),
-    voteDiff: Number(postApi.voteDiff),
-    totalPages: Number(postApi.totalPages)
-  })),
-);
+const posts = computed<Post[] | undefined>(() => {
+  if (data.value == null) return undefined;
+  return schema.cast(data.value.data) as Post[];
+});
 </script>
 
 <template>
-  <p>{{ postList }}</p>
   <ul class="">
-    <PostListItem v-for="post in postList" :key="post.postId" :post="post" />
+    <PostListItem v-for="post in posts" :key="post.postId" :post="post" />
   </ul>
 </template>

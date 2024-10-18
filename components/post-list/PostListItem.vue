@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import dayjs from "dayjs";
-import type { Post } from "~/models/post";
+import type { Post } from "~/models/post-list";
 
 const router = useRouter();
 
@@ -10,24 +10,7 @@ const props = defineProps<{
 
 const page = ref(props.post.totalPages);
 
-const displayDate = computed(() => {
-  const repliedAt = props.post.repliedAt;
-  const secondDiff = dayjs().diff(repliedAt, "s");
-  const minDiff = dayjs().diff(repliedAt, "m");
-  const hourDiff = dayjs().diff(repliedAt, "h");
-  const dayDiff = dayjs().diff(repliedAt, "d");
-  if (secondDiff < 60) {
-    return "Recently replied";
-  } else if (minDiff < 60) {
-    return `${minDiff} minutes ago`;
-  } else if (hourDiff < 24) {
-    return `${hourDiff} hours ago`;
-  } else if (dayDiff < 31) {
-    return `${dayDiff} days ago`;
-  } else {
-    return repliedAt.format("DD/MM/YYYY");
-  }
-});
+const displayDate = computed(() => formatter.dateToText(props.post.repliedAt));
 
 const pageOpts = computed(() => {
   const result = [];

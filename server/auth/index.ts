@@ -11,15 +11,16 @@ async function checkIsAuthed(event: H3Event) {
 
   try {
     const {
-      payload: { userId },
-    } = await jwtVerify<{ exp: number; userId: string }>(jwt, secret, {
+      payload: { sub: userId },
+    } = await jwtVerify<{ sub: string }>(jwt, secret, {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
     });
     return userId;
   } catch (e) {
-    if (e instanceof errors.JWTExpired) throw unauthErr;
-    throw e;
+    // if (e instanceof errors.JWTExpired) throw unauthErr;
+    // throw e;
+    throw unauthErr;
   }
 }
 

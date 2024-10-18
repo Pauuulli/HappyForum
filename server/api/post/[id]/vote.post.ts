@@ -3,30 +3,26 @@ import { object, number } from "yup";
 import { pool } from "~/server/utils/database/client";
 
 interface Vote {
-  userId: number;
-  postId: number;
   type: 1 | 2; // 1: up, 2: down
 }
 
-export default authEventHandler(async (evt) => {
+export default authEventHandler(async (evt, userId) => {
+  const postId = getRouterParam(evt, "id");
   const vote = await readValidatedBody(evt, validateVote);
-  await createNewVote(vote);
+  await createNewVote();
   setResponseStatus(evt, 201);
-});
 
-async function createNewVote(v: Vote) {
-  const { userId, postId, type } = v;
-  const query = `
-    INSERT INTO post_votes (user_id, post_id, is_up)
-    VALUES($1, $2, $3);
-    `;
-  await pool.query(query, [userId, postId, type == 1]);
-}
+  async function createNewVote() {
+    const query = `
+      INSERT INTO post_votes (user_id, post_id, is_up)
+      VALUES($1, $2, $3);
+      `;
+    await pool.query(query, [userId, postId, vote.type == 1]);
+  }
+});
 
 async function validateVote(reqBody: unknown) {
   const schema = object({
-    userId: number().required(),
-    postId: number().required(),
     type: number().required().min(1).max(2),
   });
   try {
