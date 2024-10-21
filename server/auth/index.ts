@@ -3,10 +3,12 @@ import type { H3Event } from "~/models/server";
 import { jwtConfig } from "~/server/auth/jwt";
 import { secret } from "~/server/auth/secret";
 
-async function checkIsAuthed(event: H3Event) {
+async function checkIsAuthed(
+  event: H3Event,
+): Promise<{ isAuthed: false } | { isAuthed: true; userId: string }> {
   const { jwt } = parseCookies(event);
   if (!jwt) {
-    throw unauthErr;
+    return { isAuthed: false };
   }
 
   try {
@@ -16,18 +18,11 @@ async function checkIsAuthed(event: H3Event) {
       issuer: jwtConfig.issuer,
       audience: jwtConfig.audience,
     });
-    return userId;
+    return { isAuthed: true, userId };
   } catch (e) {
-    // if (e instanceof errors.JWTExpired) throw unauthErr;
-    // throw e;
-    throw unauthErr;
+    return { isAuthed: false };
   }
 }
-
-const unauthErr = createError({
-  statusCode: 401,
-  statusMessage: "Unauthorized",
-});
 
 export { checkIsAuthed };
 export { secret } from "~/server/auth/secret";

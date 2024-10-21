@@ -6,14 +6,11 @@ interface Post {
   title: string;
   content: string;
   catId: number;
-  userId: number;
 }
 
-export default eventHandler(async (evt) => {
-  await checkIsAuthed(evt);
-
+export default authEventHandler(async (evt, userId) => {
   const newPost = await readValidatedBody(evt, validatePost);
-  const postId = await createNewPost(newPost);
+  const postId = await createNewPost({ ...newPost, userId });
   setResponseStatus(evt, 201);
   return { postId };
 });
@@ -23,7 +20,6 @@ async function validatePost(reqBody: unknown) {
     title: string().required().max(500),
     content: string().required().max(5000),
     catId: number().required(),
-    userId: number().required(),
   });
   try {
     await schema.validate(reqBody);
@@ -34,7 +30,7 @@ async function validatePost(reqBody: unknown) {
   return reqBody as Post;
 }
 
-async function createNewPost(post: Post) {
+async function createNewPost(post: Post & { userId: string }) {
   const { title, catId, userId, content } = post;
 
   const newPostQry = `

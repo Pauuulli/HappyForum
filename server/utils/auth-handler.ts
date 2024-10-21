@@ -14,9 +14,10 @@ export const authEventHandler = <
   handler: (evt: H3Event<T>, userId: string) => D,
 ): EventHandler<T, D> =>
   eventHandler<T>(async (evt) => {
-    const userId = await checkIsAuthed(evt);
+    const result = await checkIsAuthed(evt);
+    if(!result.isAuthed) throw createError({statusCode: 401});
     // do something before the route handler
-    const response = await handler(evt, userId);
+    const response = await handler(evt, result.userId);
     // do something after the route handler
     return response;
   });
