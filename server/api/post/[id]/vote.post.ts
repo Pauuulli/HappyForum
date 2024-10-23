@@ -1,13 +1,14 @@
 import { authEventHandler } from "~/server/utils/auth-handler";
 import { object, number } from "yup";
 import { pool } from "~/server/utils/database/client";
+import { getPostDetails } from "./index.get";
 
 interface Vote {
   type: 1 | 2; // 1: up, 2: down
 }
 
 export default authEventHandler(async (evt, userId) => {
-  const postId = getRouterParam(evt, "id");
+  const postId = getRouterParam(evt, "id")!;
   const vote = await readValidatedBody(evt, validateVote);
   await createNewVote();
   setResponseStatus(evt, 201);
@@ -19,6 +20,8 @@ export default authEventHandler(async (evt, userId) => {
       `;
     await pool.query(query, [userId, postId, vote.type == 1]);
   }
+
+  return await getPostDetails(postId, userId);
 });
 
 async function validateVote(reqBody: unknown) {

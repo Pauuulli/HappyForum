@@ -14,17 +14,14 @@ export default eventHandler(async (evt) => {
   const sort = field == "vote_diff" ? `${field} ${order}` : "created_at";
   console.log(sort);
 
-  const auth = await checkIsAuthed(evt);
-  const cmtQry = auth.isAuthed ? getRegisteredQry(sort) : guestQry;
-  const qryParams = auth.isAuthed
-    ? [postId, auth.userId]
-    : [postId, sort];
+  const {userId} = await checkIsAuthed(evt);
+
 
   const { data: comments, pagination } = await getPaginatedData(
-    cmtQry,
+    getQry(sort),
     COMMENTS_PER_PAGE,
     page,
-    qryParams,
+    [postId, userId ?? '-1'],
   );
 
   const commentsWithParentPromises = comments.map(async (cmt) => {
@@ -72,7 +69,7 @@ async function getCommentParents(firstParentId: string) {
   }[];
 }
 
-function getRegisteredQry(sort: string){
+function getQry(sort: string) {
   return `
   WITH
   comments_base AS (
@@ -142,137 +139,22 @@ function getRegisteredQry(sort: string){
     GROUP BY
       cmt_b.comment_id
   )
-SELECT
-  cmt_b.comment_id,
-  cmt_b.publisher,
-  cmt_b.created_at created_at,
-  cmt_b.content,
-  cmt_b.parent_id,
-  cv.up_votes,
-  cv.down_votes,
-  cv.vote_diff vote_diff,
-  cc.count
-FROM
-  comments_base cmt_b
-  JOIN count_votes cv USING (comment_id)
-  JOIN count_child cc USING (comment_id)
-ORDER BY
-  ${sort}
-  `
+  SELECT
+    cmt_b.comment_id,
+    cmt_b.publisher,
+    cmt_b.created_at created_at,
+    cmt_b.content,
+    cmt_b.parent_id,
+    cv.up_votes,
+    cv.down_votes,
+    cv.vote_diff vote_diff,
+    cv.voted,
+    cc.count
+  FROM
+    comments_base cmt_b
+    JOIN count_votes cv USING (comment_id)
+    JOIN count_child cc USING (comment_id)
+  ORDER BY
+    ${sort}
+    `;
 }
-
-const registeredQry = `
-WITH
-  comments_base AS (
-    SELECT
-      c.comment_id,
-      u.name publisher,
-      c.created_at created_at,
-      c.content,
-      c.parent_id
-    FROM
-      comments c
-      JOIN users u USING (user_id)
-    WHERE
-      c.post_id = $1
-  ),
-  count_votes AS (
-    SELECT
-      cmt_b.comment_id,
-      SUM(
-        CASE
-          WHEN cv.is_up THEN 1
-          ELSE 0
-        END
-      ) up_votes,
-      SUM(
-        CASE
-          WHEN NOT cv.is_up THEN 1
-          ELSE 0
-        END
-      ) down_votes,
-      (
-        SUM(
-          CASE
-            WHEN cv.is_up THEN 1
-            ELSE 0
-          END
-        ) - SUM(
-          CASE
-            WHEN NOT cv.is_up THEN 1
-            ELSE 0
-          END
-        )
-      ) vote_diff,
-      (
-        CASE
-          WHEN NOT (BOOL_OR (cv.user_id = $2) IS true) THEN NULL
-          WHEN BOOL_OR (
-            cv.user_id = $2
-            AND cv.is_up
-          ) THEN 'up'
-          ELSE 'down'
-        END
-      ) voted
-    FROM
-      comments_base cmt_b
-      LEFT JOIN comment_votes cv USING (comment_id)
-    GROUP BY
-      cmt_b.comment_id
-  ),
-  count_child AS (
-    SELECT
-      cmt_b.comment_id,
-      COUNT(child_c.parent_id) count
-    FROM
-      comments_base cmt_b
-      LEFT JOIN comments child_c ON child_c.comment_id = cmt_b.comment_id
-    GROUP BY
-      cmt_b.comment_id
-  )
-SELECT
-  cmt_b.comment_id,
-  cmt_b.publisher,
-  cmt_b.created_at created_at,
-  cmt_b.content,
-  cmt_b.parent_id,
-  cv.up_votes,
-  cv.down_votes,
-  cv.vote_diff vote_diff,
-  cc.count
-FROM
-  comments_base cmt_b
-  JOIN count_votes cv USING (comment_id)
-  JOIN count_child cc USING (comment_id)
-ORDER BY
-  $3
-`;
-
-const guestQry = `
-SELECT
-  c.comment_id,
-  u.name publisher,
-  c.created_at created_at,
-  c.content,
-  c.parent_id,
-  SUM(CASE WHEN cv.is_up THEN 1 ELSE 0 END) up_votes,
-  SUM(CASE WHEN NOT cv.is_up THEN 1 ELSE 0 END) down_votes,
-  (
-      SUM(CASE WHEN cv.is_up THEN 1 ELSE 0 END) - 
-      SUM(CASE WHEN NOT cv.is_up THEN 1 ELSE 0 END)
-  ) vote_diff,
-  COUNT(child_c.parent_id) child_count
-FROM
-  comments c
-  JOIN users u USING(user_id)
-  LEFT JOIN comment_votes cv USING(comment_id)
-  LEFT JOIN comments child_c ON c.comment_id = child_c.parent_id 
-WHERE c.post_id = $1
-GROUP BY
-  c.comment_id,
-  u.name,
-  c.created_at,
-  c.content
-ORDER BY
-  $2
-`;

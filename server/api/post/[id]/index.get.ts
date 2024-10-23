@@ -1,13 +1,43 @@
-export default eventHandler(async (evt) => {
-  const postId = getRouterParam(evt, "id");
+import { checkIsAuthed } from "~/server/auth";
 
-  const postQry = `
+export default eventHandler(async (evt) => {
+  const postId = getRouterParam(evt, "id")!;
+  const { userId } = await checkIsAuthed(evt);
+
+  return await getPostDetails(postId, userId);
+});
+
+export async function getPostDetails(postId: string, userId?: string) {
+  const votedClause = `
+  (
+    CASE
+      WHEN NOT (BOOL_OR (pv.user_id = $2) IS true) THEN NULL
+      WHEN BOOL_OR (
+        pv.user_id = $2
+        AND pv.is_up
+      ) THEN 'up'
+      ELSE 'down'
+    END
+  ) voted,
+  `;
+
+  const qry = `
     SELECT
       u.name publisher,
       p.created_at,
       p.content,
       p.title,
       p.cat_id,
+      (
+        CASE
+          WHEN NOT (BOOL_OR (pv.user_id = $2) IS true) THEN NULL
+          WHEN BOOL_OR (
+            pv.user_id = $2
+            AND pv.is_up
+          ) THEN 'up'
+          ELSE 'down'
+        END
+      ) voted,
       SUM(CASE WHEN pv.is_up THEN 1 ELSE 0 END) up_votes,
       SUM(CASE WHEN NOT pv.is_up THEN 1 ELSE 0 END) down_votes
     FROM
@@ -24,7 +54,7 @@ export default eventHandler(async (evt) => {
     ;
   `;
 
-  const { rows } = await pool.query(postQry, [postId]);
+  const { rows } = await pool.query(qry, [postId, userId ?? -1]);
   if (rows.length == 0) throw createError({ statusCode: 404 });
   return objectKeyToCamel(rows[0]);
-});
+}

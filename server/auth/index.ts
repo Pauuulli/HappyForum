@@ -3,9 +3,7 @@ import type { H3Event } from "~/models/server";
 import { jwtConfig } from "~/server/auth/jwt";
 import { secret } from "~/server/auth/secret";
 
-async function checkIsAuthed(
-  event: H3Event,
-): Promise<{ isAuthed: false } | { isAuthed: true; userId: string }> {
+async function checkIsAuthed(event: H3Event) {
   const { jwt } = parseCookies(event);
   if (!jwt) {
     return { isAuthed: false };
