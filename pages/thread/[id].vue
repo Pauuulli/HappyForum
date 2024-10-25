@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { array, object, date, number } from "yup";
 import type { Post, Comment } from "~/models/thread";
-import { COMMENTS_PER_PAGE } from "~/server/config/comment/list";
-
-const commentSchema = object({
-  createdAt: date(),
-  upVotes: number(),
-  downVotes: number(),
-  childCount: number(),
-});
 
 const route = useRoute();
 const postId = computed(() => route.params.id as string);
@@ -16,6 +8,13 @@ const postId = computed(() => route.params.id as string);
 const page = computed(() => {
   const pageQry = route.query.page;
   return typeof pageQry != "string" || isNaN(+pageQry) ? 0 : parseInt(pageQry);
+});
+
+const commentSchema = object({
+  createdAt: date(),
+  upVotes: number(),
+  downVotes: number(),
+  childCount: number(),
 });
 
 const { data: postRaw } = await useFetch(`/api/post/${postId.value}`);
@@ -43,6 +42,10 @@ const commentsPages = ref<Comment[][]>(
     : [],
 );
 
+const viewerReference = ref<{ visible: boolean; commentId?: string }>({
+  visible: false,
+});
+
 const pages = computed(() =>
   commentsPages.value.map((_, idx) => ({
     label: `Page ${idx + 1}`,
@@ -50,16 +53,19 @@ const pages = computed(() =>
   })),
 );
 
-function onVoted(type: 1 | 2, commentIdx?: number) {
-  if (commentIdx == null) {
-    type == 1 ? ++post.value!.upVotes : ++post.value!.downVotes;
+async function onVoted(comment?: Comment) {
+  if (comment == null) {
+    post.value = await api(`/api/post/${postId.value}`);
     return;
   }
 
-  const x = Math.floor(commentIdx / COMMENTS_PER_PAGE);
-  const y = commentIdx % COMMENTS_PER_PAGE;
-  const target = commentsPages.value[x][y];
-  type == 1 ? ++target.upVotes : ++target.downVotes;
+  const newComment = await api(`/api/comment/${comment.commentId}`);
+  Object.assign(comment, newComment);
+}
+
+function onViewReply(commentId: string) {
+  viewerReference.value.visible = true;
+  viewerReference.value.commentId = commentId;
 }
 </script>
 
@@ -68,13 +74,13 @@ function onVoted(type: 1 | 2, commentIdx?: number) {
     <ThreadHeader :post="post" />
     <ThreadPagination :page-num="0" :pages="pages" class="mt-12" />
     <article class="flex flex-col gap-3 bg-gray-100">
-      <ThreadComment :value="post" :number="-1" @voted="onVoted" />
+      <ThreadComment :value="post" :idx="-1" @voted="onVoted" />
       <ThreadComment
         v-for="(comment, idx) in commentsPages[0]"
         :key="comment.commentId"
         :value="comment"
-        :number="idx"
         @voted="onVoted"
+        @view-reply="onViewReply"
       />
     </article>
     <template
@@ -87,8 +93,8 @@ function onVoted(type: 1 | 2, commentIdx?: number) {
           v-for="(comment, idx) in comments"
           :key="comment.commentId"
           :value="comment"
-          :number="idx + COMMENTS_PER_PAGE * (pageIdx + 1)"
           @voted="onVoted"
+          @view-reply="onViewReply"
         />
       </article>
     </template>
@@ -97,5 +103,11 @@ function onVoted(type: 1 | 2, commentIdx?: number) {
     >
       完
     </div>
+
+    <ThreadOverlay
+      v-if="viewerReference.commentId"
+      v-model:visible="viewerReference.visible"
+      :comment-id="viewerReference.commentId"
+    />
   </template>
 </template>

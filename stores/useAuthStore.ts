@@ -23,7 +23,7 @@ export const useAuthStore = defineStore("authStore", () => {
   }
 
   async function refreshToken(){
-    const {exp} = await api<{exp: number}>('/api/user/refresh');
+    const {exp} = await api<{exp: number}>('/api/user/refresh', 'POST');
 
     localStorage.setItem('USER_EXP', String(exp));
   }

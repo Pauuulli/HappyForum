@@ -4,6 +4,7 @@ interface Base {
   content: string;
   upVotes: number;
   downVotes: number;
+  voted: "up" | "down" | null;
 }
 
 type Post = Base & {
@@ -15,6 +16,7 @@ type Post = Base & {
 type Comment = Base & {
   commentId: string;
   childCount: number;
+  commentOrder: number;
   parents: { commentId: string; content: string }[];
 };
 

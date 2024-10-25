@@ -1,4 +1,3 @@
-import { checkIsAuthed } from "~/server/auth";
 import { object, string, number } from "yup";
 import { pool } from "~/server/utils/database/client";
 

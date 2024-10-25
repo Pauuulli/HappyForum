@@ -145,11 +145,12 @@ function getQry(sort: string) {
     cmt_b.created_at created_at,
     cmt_b.content,
     cmt_b.parent_id,
-    cv.up_votes,
-    cv.down_votes,
-    cv.vote_diff vote_diff,
+    cv.up_votes::INT,
+    cv.down_votes::INT,
+    cv.vote_diff::INT vote_diff,
     cv.voted,
-    cc.count
+    cc.count::INT child_count,
+    Rank() OVER(ORDER BY created_at)::INT comment_order
   FROM
     comments_base cmt_b
     JOIN count_votes cv USING (comment_id)
