@@ -18,6 +18,7 @@ type Comment = Base & {
   childCount: number;
   commentOrder: number;
   parents: { commentId: string; content: string }[];
+  children: { commentId: string }[];
 };
 
 export type { Post, Comment };

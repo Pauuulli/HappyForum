@@ -3,10 +3,13 @@ import type { H3Event } from "~/models/server";
 import { jwtConfig } from "~/server/auth/jwt";
 import { secret } from "~/server/auth/secret";
 
-async function checkIsAuthed(event: H3Event) {
+type UnAuthed = { isAuthed: false; userId: undefined };
+type Authed = { isAuthed: true; userId: string };
+
+async function checkIsAuthed(event: H3Event): Promise<UnAuthed | Authed> {
   const { jwt } = parseCookies(event);
   if (!jwt) {
-    return { isAuthed: false };
+    return { isAuthed: false, userId: undefined };
   }
 
   try {
@@ -18,7 +21,7 @@ async function checkIsAuthed(event: H3Event) {
     });
     return { isAuthed: true, userId };
   } catch (e) {
-    return { isAuthed: false };
+    return { isAuthed: false, userId: undefined };
   }
 }
 

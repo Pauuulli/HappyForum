@@ -8,7 +8,7 @@ interface Vote {
 }
 
 export default authEventHandler(async (evt, userId) => {
-  const commentId = getRouterParam(evt, "id")!;
+  const {commentId} = getRouterParams(evt);
   const { type } = await readValidatedBody(evt, validateVote);
   try {
     await createNewVote();

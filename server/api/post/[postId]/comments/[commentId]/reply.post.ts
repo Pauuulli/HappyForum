@@ -5,13 +5,12 @@ import { authEventHandler } from "~/server/utils/auth-handler";
 type CommentReply = InferType<typeof schema>;
 
 const schema = object({
-  postId: number().required(),
   content: string().required().max(5000),
 });
 
 export default authEventHandler(async (evt, userId) => {
-  const parentId = getRouterParam(evt, "id")!;
-  const { postId, content } = await readValidatedBody<CommentReply>(
+  const {commentId: parentId, postId} = getRouterParams(evt);
+  const { content } = await readValidatedBody<CommentReply>(
     evt,
     (body) => schema.validate(body),
   );
@@ -35,7 +34,7 @@ export default authEventHandler(async (evt, userId) => {
   }
 });
 
-async function checkMatchParentPost(parentId: string, postId: number) {
+async function checkMatchParentPost(parentId: string, postId: string) {
   const qry = `
     SELECT post_id
     FROM comments
