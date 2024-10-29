@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { PaginatedData } from "~/models/pagination";
+import type { PaginatedData } from "~/ts-type/models/pagination";
 import { object, number, array, date } from "yup";
-import type { Post } from "~/models/post-list";
+import type { Post } from "~/ts-type/models/post-list";
 
 const schema = array(
   object({

@@ -1,7 +1,7 @@
 import { authEventHandler } from "~/server/utils/auth-handler";
 import { object, string } from "yup";
 import { pool } from "~/server/utils/database/client";
-import { handleQueryError } from "~/server/utils/database/error-handler";
+import { rethrowQueryError } from "~/server/utils/database/error-handler";
 
 export default authEventHandler(async (evt) => {
   const { catName } = await readValidatedBody(evt, validateCategory);
@@ -14,7 +14,7 @@ export default authEventHandler(async (evt) => {
     await pool.query(qry, [catName]);
     setResponseStatus(evt, 201);
   } catch (e) {
-    handleQueryError(e);
+    rethrowQueryError(e);
   }
 });
 

@@ -1,7 +1,7 @@
 import { pool } from "~/server/utils/database/client";
 import { object, string } from "yup";
 import bcrypt from "bcrypt";
-import { handleQueryError } from "~/server/utils/database/error-handler";
+import { rethrowQueryError } from "~/server/utils/database/error-handler";
 
 interface User {
   name: string;
@@ -19,7 +19,7 @@ export default eventHandler<{
     setResponseStatus(event, 201);
     return { userId };
   } catch (e) {
-    handleQueryError(e);
+    rethrowQueryError(e);
   }
 });
 

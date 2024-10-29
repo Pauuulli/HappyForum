@@ -1,6 +1,6 @@
 import { SignJWT } from "jose";
 import { secret } from "./secret";
-import type { H3Event } from "~/models/server";
+import type { H3Event } from "~/ts-type/models/server";
 
 export const jwtConfig = {
   issuer: "https://plgor-forum.com",

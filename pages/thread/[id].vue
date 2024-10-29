@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { array, object, date, number } from "yup";
-import type { Post, Comment } from "~/models/thread";
+import type { Post, Comment, Overlay } from "~/ts-type/models/thread";
 
 const route = useRoute();
 const postId = computed(() => route.params.id as string);
+const { onVote } = useThreadComment(postId.value);
 
 const page = computed(() => {
   const pageQry = route.query.page;
@@ -42,8 +43,9 @@ const commentsPages = ref<Comment[][]>(
     : [],
 );
 
-const viewerReference = ref<{ visible: boolean; commentId?: string }>({
+const overlay = ref<Overlay>({
   visible: false,
+  isLightMode: false,
 });
 
 const pages = computed(() =>
@@ -53,19 +55,9 @@ const pages = computed(() =>
   })),
 );
 
-async function onVoted(comment?: Comment) {
-  if (comment == null) {
-    post.value = await api(`/api/post/${postId.value}`);
-    return;
-  }
-
-  const newComment = await api(`/api/comment/${comment.commentId}`);
-  Object.assign(comment, newComment);
-}
-
-function onViewReply(commentId: string) {
-  viewerReference.value.visible = true;
-  viewerReference.value.commentId = commentId;
+function onViewReply(comment: Comment) {
+  overlay.value.visible = true;
+  overlay.value.comment = comment;
 }
 </script>
 
@@ -74,12 +66,12 @@ function onViewReply(commentId: string) {
     <ThreadHeader :post="post" />
     <ThreadPagination :page-num="0" :pages="pages" class="mt-12" />
     <article class="flex flex-col gap-3 bg-gray-100">
-      <ThreadComment :value="post" :idx="-1" @voted="onVoted" />
+      <ThreadComment :item="post" :idx="-1" @vote="onVote" />
       <ThreadComment
-        v-for="(comment, idx) in commentsPages[0]"
+        v-for="comment in commentsPages[0]"
         :key="comment.commentId"
-        :value="comment"
-        @voted="onVoted"
+        :item="comment"
+        @vote="onVote"
         @view-reply="onViewReply"
       />
     </article>
@@ -90,10 +82,10 @@ function onViewReply(commentId: string) {
       <ThreadPagination :page-num="pageIdx + 1" :pages="pages" />
       <article class="flex flex-col gap-3 bg-gray-100">
         <ThreadComment
-          v-for="(comment, idx) in comments"
+          v-for="comment in comments"
           :key="comment.commentId"
-          :value="comment"
-          @voted="onVoted"
+          :item="comment"
+          @vote="onVote"
           @view-reply="onViewReply"
         />
       </article>
@@ -104,10 +96,6 @@ function onViewReply(commentId: string) {
       完
     </div>
 
-    <ThreadOverlay
-      v-if="viewerReference.commentId"
-      v-model:visible="viewerReference.visible"
-      :comment-id="viewerReference.commentId"
-    />
+    <ThreadOverlay v-model="overlay" :post-id="postId" />
   </template>
 </template>

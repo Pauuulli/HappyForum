@@ -1,4 +1,4 @@
-import { PaginatedData } from "~/models/pagination";
+import { PaginatedData } from "~/ts-type/models/pagination";
 import { pool } from "./client";
 import { objectKeyToCamel } from "../key-transformer";
 

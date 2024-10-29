@@ -1,5 +1,5 @@
 import { jwtVerify, errors } from "jose";
-import type { H3Event } from "~/models/server";
+import type { H3Event } from "~/ts-type/models/server";
 import { jwtConfig } from "~/server/auth/jwt";
 import { secret } from "~/server/auth/secret";
 

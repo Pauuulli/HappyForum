@@ -1,7 +1,7 @@
 import { object, string } from "yup";
 import bcrypt from "bcrypt";
 import { pool } from "~/server/utils/database/client";
-import { handleQueryError } from "~/server/utils/database/error-handler";
+import { rethrowQueryError } from "~/server/utils/database/error-handler";
 import { setJwtCookies } from "~/server/auth";
 
 interface SigninBody {
@@ -62,7 +62,7 @@ async function getUser(
     if (rows.length == 0) return undefined;
     return { hash: rows[0].password, id: rows[0].id };
   } catch (e) {
-    handleQueryError(e);
+    rethrowQueryError(e);
     throw e;
   }
 }

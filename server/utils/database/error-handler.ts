@@ -1,6 +1,6 @@
 import { isDuplicateKeyErr } from "../../database/error-indentifier";
 
-export function handleQueryError(err: unknown) {
+export function rethrowQueryError(err: unknown) {
   console.error("Error executing query", err);
 
   if (isDuplicateKeyErr(err)) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Post } from "~/models/thread";
+import type { Post } from "~/ts-type/models/thread";
 
 defineProps<{
   post: Post;

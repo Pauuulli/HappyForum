@@ -1,34 +1,10 @@
-type $Fetch<T = any> = typeof $fetch<T>;
-type PR<T> = ReturnType<$Fetch<T>>;
-type Request = Parameters<$Fetch>[0];
-type MethodWithBody = "POST" | "DELETE";
+type FetchParams = Parameters<typeof $fetch>;
 
-async function api<T = any>(url: Request): PR<T>;
-async function api<T = any>(
-  url: Request,
-  method: "GET",
-  query?: Record<string, any>,
-): PR<T>;
-async function api<T = any>(
-  url: Request,
-  method: MethodWithBody,
-  body?: Record<string | number, any>,
-  query?: Record<string, any>,
-): PR<T>;
-async function api<T = any>(
-  url: Request,
-  method?: "GET" | MethodWithBody,
-  body?: Record<string | number, any>,
-  query?: Record<string, any>,
-): PR<T> {
-  const _method = method ? method : "GET";
+async function api<T = any>(...args: FetchParams) {
+  const [req, opt] = args;
 
   try {
-    return await $fetch<T>(url, {
-      method: _method,
-      body: method == "GET" ? undefined : body,
-      query,
-    });
+    return await $fetch<T>(req, opt);
   } catch (e) {
     if (isUnauthErr(e)) {
       const { loginDialogVisible } = storeToRefs(useAppStore());

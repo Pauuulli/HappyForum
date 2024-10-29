@@ -1,26 +1,13 @@
 import { checkIsAuthed } from "~/server/auth";
 
 export default eventHandler(async (evt) => {
-  const postId = getRouterParam(evt, "id")!;
+  const postId = getRouterParam(evt, "postId")!;
   const { userId } = await checkIsAuthed(evt);
 
   return await getPostDetails(postId, userId);
 });
 
-export async function getPostDetails(postId: string, userId?: string) {
-  const votedClause = `
-  (
-    CASE
-      WHEN NOT (BOOL_OR (pv.user_id = $2) IS true) THEN NULL
-      WHEN BOOL_OR (
-        pv.user_id = $2
-        AND pv.is_up
-      ) THEN 'up'
-      ELSE 'down'
-    END
-  ) voted,
-  `;
-
+async function getPostDetails(postId: string, userId?: string) {
   const qry = `
     SELECT
       u.name publisher,

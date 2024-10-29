@@ -15,10 +15,22 @@ type Post = Base & {
 
 type Comment = Base & {
   commentId: string;
-  childCount: number;
   commentOrder: number;
   parents: { commentId: string; content: string }[];
   children: { commentId: string }[];
 };
 
-export type { Post, Comment };
+interface Overlay {
+  visible: boolean;
+  comment?: Comment;
+  isLightMode: boolean;
+}
+
+interface VoteDetails {
+  id: number;
+  upVotes: number;
+  downVotes: number;
+  voted: string;
+}
+
+export type { Post, Comment, Overlay, VoteDetails };

@@ -2,9 +2,12 @@ export const useAuthStore = defineStore("authStore", () => {
   const isLoggedIn = ref(false);
 
   async function login(name: string, password: string) {
-    const { exp } = await api<{ exp: number }>("/api/user/login", "POST", {
-      name,
-      password,
+    const { exp } = await api<{ exp: number }>("/api/user/login", {
+      method: "POST",
+      body: {
+        name,
+        password,
+      },
     });
 
     localStorage.setItem("USER_NAME", name);
@@ -14,7 +17,7 @@ export const useAuthStore = defineStore("authStore", () => {
   }
 
   async function logout() {
-    await api("/api/user/logout", "DELETE");
+    await api("/api/user/logout", { method: "DELETE" });
 
     localStorage.removeItem("USER_NAME");
     localStorage.removeItem("USER_EXP");
@@ -22,10 +25,12 @@ export const useAuthStore = defineStore("authStore", () => {
     isLoggedIn.value = false;
   }
 
-  async function refreshToken(){
-    const {exp} = await api<{exp: number}>('/api/user/refresh', 'POST');
+  async function refreshToken() {
+    const { exp } = await api<{ exp: number }>("/api/user/refresh", {
+      method: "POST",
+    });
 
-    localStorage.setItem('USER_EXP', String(exp));
+    localStorage.setItem("USER_EXP", String(exp));
   }
 
   return { isLoggedIn, login, logout, refreshToken };

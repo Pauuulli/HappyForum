@@ -41,7 +41,7 @@ async function signup(reqBody: Signup) {
   isAppLoadingVisible.value = true;
 
   try {
-    await api("/api/user/register", "POST", reqBody);
+    await api("/api/user/register", { method: "POST", body: reqBody });
   } finally {
     isAppLoadingVisible.value = false;
   }

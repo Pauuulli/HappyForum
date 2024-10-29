@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import dayjs from "dayjs";
-import type { Post } from "~/models/post-list";
+import type { Post } from "~/ts-type/models/post-list";
 
 const router = useRouter();
 
