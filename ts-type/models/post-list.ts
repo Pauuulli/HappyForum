@@ -8,4 +8,9 @@ interface Post {
   totalPages: number;
 }
 
-export type { Post };
+interface Category {
+  catId: number;
+  catName: string;
+}
+
+export type { Post, Category };

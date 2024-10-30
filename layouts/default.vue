@@ -6,7 +6,6 @@
   <main class="pb-12">
     <slot />
   </main>
-  <AppFooter />
   <AppLoading />
   <Toast />
 </template>

@@ -1,7 +1,7 @@
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */
-@layer tailwind-base, primevue, primeIcon, tailwind-utilities;
+@layer tailwind-base, primevue, primeIcon,tailwind-components, tailwind-utilities;
 
 @import url("primeicons/primeicons.css") layer(primeIcon);
 
@@ -9,8 +9,11 @@
   @tailwind base;
 }
 
-@layer tailwind-utilities {
+@layer tailwind-components {
   @tailwind components;
+}
+
+@layer tailwind-utilities {
   @tailwind utilities;
 }
 
