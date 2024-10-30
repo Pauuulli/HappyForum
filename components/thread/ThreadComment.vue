@@ -22,22 +22,22 @@ const childCount = computed(() =>
 </script>
 
 <template>
-  <article class="flex flex-col gap-6 bg-white p-3">
+  <article class="flex flex-col gap-5 bg-white p-4">
     <header class="flex items-center gap-3">
       <span class="text-sm text-secondary"
         >#{{ isComment(item) ? item.commentOrder + 1 : 1 }}</span
       >
       <span class="text-male">{{ item.publisher }}</span>
       <span class="flex grow items-center gap-1 text-sm text-secondary">
-        <i class="pi pi-circle-fill !text-[5px]"></i>
+        <i class="pi pi-circle-fill translate-y-[1px] !text-[5px]"></i>
         {{ formatter.dateToText(item.createdAt) }}
       </span>
-      <span class="text-secondary">
-        <i class="pi pi-reply mr-3"></i>
-        <i class="pi pi-ellipsis-h mr-3"></i>
+      <span class="flex gap-1">
+        <Button icon="pi pi-reply" text rounded severity="secondary" />
+        <Button icon="pi pi-ellipsis-h" text rounded severity="secondary" />
       </span>
     </header>
-    <p>{{ item.content }}</p>
+    <div v-html="item.content" />
     <section class="flex gap-2">
       <div class="flex rounded-lg bg-gray-100 p-2 text-sm text-secondary">
         <span class="mr-3 flex items-center">

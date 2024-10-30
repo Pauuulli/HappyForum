@@ -29,7 +29,7 @@ const posts = computed<Post[] | undefined>(() => {
   return schema.cast(postListPage.value.data) as Post[];
 });
 
-const isDialogCreateVisible = ref(true);
+const isDialogCreateVisible = ref(false);
 
 async function onRefresh() {
   isAppLoadingVisible.value = true;
@@ -40,7 +40,9 @@ async function onRefresh() {
   }
 }
 
-async function onCreateNewPost() {}
+async function onCreateNewPost() {
+  isDialogCreateVisible.value = true;
+}
 </script>
 
 <template>
@@ -59,5 +61,9 @@ async function onCreateNewPost() {}
     <AppFooterButton icon="pi pi-plus" @click="onCreateNewPost" />
   </AppFooter>
 
-  <CategoryCreate v-model:visible="isDialogCreateVisible" />
+  <CategoryCreate
+    v-model:visible="isDialogCreateVisible"
+    :cat-id="catId"
+    @created="onRefresh"
+  />
 </template>

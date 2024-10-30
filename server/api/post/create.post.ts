@@ -1,5 +1,6 @@
 import { object, string, number } from "yup";
 import { pool } from "~/server/utils/database/client";
+import { dompurify } from "~/server/utils/dompurify";
 
 interface Post {
   title: string;
@@ -30,7 +31,8 @@ async function validatePost(reqBody: unknown) {
 }
 
 async function createNewPost(post: Post & { userId: string }) {
-  const { title, catId, userId, content } = post;
+  let { title, catId, userId, content } = post;
+  content = dompurify.sanitize(content);
 
   const newPostQry = `
     INSERT INTO posts(title, cat_id, content, user_id)

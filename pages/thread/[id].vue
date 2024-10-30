@@ -3,6 +3,7 @@ import { array, object, date, number } from "yup";
 import type { Post, Comment, Overlay } from "~/ts-type/models/thread";
 
 const route = useRoute();
+const { isAppMenuVisible } = storeToRefs(useAppStore());
 const postId = computed(() => route.params.id as string);
 const { onVote } = useThreadComment(postId.value);
 
@@ -25,7 +26,7 @@ const { data: commentsRaw, error: commentsErr } = await useFetch(
   `/api/post/${postId.value}/comments`,
   {
     query: {
-      page,
+      page: page.value,
     },
   },
 );
@@ -55,9 +56,19 @@ const pages = computed(() =>
   })),
 );
 
+const isReplyVisible = ref(false);
+
 function onViewReply(comment: Comment) {
   overlay.value.visible = true;
   overlay.value.comment = comment;
+}
+
+async function onRefresh() {
+  commentsRaw.value = await api(`/api/post/${postId.value}/comments`, {
+    query: {
+      page: page.value,
+    },
+  });
 }
 </script>
 
@@ -95,7 +106,13 @@ function onViewReply(comment: Comment) {
     >
       完
     </div>
+    <AppFooter>
+      <AppFooterButton icon="pi pi-bars" @click="isAppMenuVisible = true" />
+      <AppFooterButton icon="pi pi-refresh" @click="onRefresh" />
+      <AppFooterButton icon="pi pi-reply" @click="isReplyVisible = true" />
+    </AppFooter>
 
     <ThreadOverlay v-model="overlay" :post-id="postId" />
+    <ThreadReply v-model="isReplyVisible" :post-id="postId" />
   </template>
 </template>

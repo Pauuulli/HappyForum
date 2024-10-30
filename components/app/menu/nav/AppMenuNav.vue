@@ -2,10 +2,8 @@
 const basePath = "/category";
 const sections: Record<string, { text: string; href: string }[]> = {
   "": [
-    { text: "吹水台", href: `${basePath}/吹水台` },
-    { text: "自選台", href: `${basePath}/自選台` },
-    { text: "創意台", href: `${basePath}/創意台` },
-    { text: "熱門", href: `${basePath}/熱門` },
+    { text: "CCTOY", href: `${basePath}/1` },
+    { text: "源神台", href: `${basePath}/2` },
   ],
 };
 const appStore = useAppStore();

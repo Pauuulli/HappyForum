@@ -1,25 +1,71 @@
 <script setup lang="ts">
-
+const props = defineProps<{
+  catId: string;
+}>();
 const visible = defineModel<boolean>("visible", { required: true });
-const content = ref('');
 
-function onOverlayClick() {
+const emit = defineEmits<{
+  (e: "created"): void;
+}>();
+
+const title = ref("");
+const content = ref("");
+const isLoading = ref(false);
+
+const isCreateDisabled = computed(
+  () =>
+    title.value.length == 0 ||
+    content.value.length == 0 ||
+    content.value.length > 5000 ||
+    isLoading.value,
+);
+
+async function onCreate() {
+  isLoading.value = true;
+  try {
+    await api("/api/post/create", {
+      method: "POST",
+      body: { catId: props.catId, content: content.value, title: title.value },
+    });
+  } finally {
+    isLoading.value = false;
+  }
   visible.value = false;
+  emit("created");
 }
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" :header="`Create New Post - ${'cctoy'}`" modal class="w-full">
-    <div class="flex flex-col gap-5">
-      
-      <InputText placeholder="Title" />
-      <Editor v-model="content" editor-style="height: 12rem"  />
-      <small class="text-end">{{ content.length }}/5000</small>
+  <Dialog
+    v-model:visible="visible"
+    :header="`Create New Post - ${'cctoy'}`"
+    modal
+    class="w-full"
+  >
+    <form class="flex flex-col gap-5">
+      <InputText v-model="title" :maxlength="200" placeholder="Title" />
+      <Editor v-model="content" editor-style="height: 12rem" />
+      <small
+        class="text-end text-base font-semibold"
+        :class="{ 'text-red-500': content.length > 5000 }"
+        >{{ content.length }}/5000</small
+      >
       <div class="flex justify-end gap-3">
-        <Button icon="pi pi-send" label="Create" />
-        <Button label="Cancel" outlined />
+        <Button
+          :icon="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
+          label="Create"
+          type="button"
+          :disabled="isCreateDisabled"
+          @click="onCreate"
+        />
+        <Button
+          label="Cancel"
+          type="button"
+          outlined
+          @click="visible = false"
+        />
       </div>
-    </div>
+    </form>
     <p>{{ content }}</p>
   </Dialog>
 </template>
