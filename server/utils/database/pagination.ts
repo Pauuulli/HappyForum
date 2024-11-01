@@ -2,12 +2,12 @@ import { PaginatedData } from "~/ts-type/models/pagination";
 import { pool } from "./client";
 import { objectKeyToCamel } from "../key-transformer";
 
-export async function getPaginatedData(
+export async function getPaginatedData<T extends T[] = any[]>(
   query: string,
   pageSize: number,
   currentPage: number,
   params?: any[],
-): Promise<PaginatedData<any[]>> {
+): Promise<PaginatedData<T>> {
   const client = await pool.connect();
 
   try {
@@ -39,7 +39,7 @@ export async function getPaginatedData(
       `);
 
     return {
-      data: data.map((d) => objectKeyToCamel(d)),
+      data: data.map((d) => objectKeyToCamel(d)) as T,
       pagination: {
         currentPage,
         totalPages: Math.ceil(count / pageSize),

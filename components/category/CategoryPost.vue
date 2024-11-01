@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import dayjs from "dayjs";
 import type { Post } from "~/ts-type/models/post-list";
 
 const router = useRouter();
@@ -8,7 +7,7 @@ const props = defineProps<{
   post: Post;
 }>();
 
-const page = ref(props.post.totalPages);
+// const page = ref(props.post.totalPages);
 
 const displayDate = computed(() => formatter.dateToText(props.post.repliedAt));
 
@@ -31,7 +30,7 @@ function onPageSelect(page: number) {
     class="border-b border-gray-300 transition-colors duration-100 hover:bg-gray-100/50"
   >
     <NuxtLink
-      :to="`/thread/${post.postId}`"
+      :to="{ path: `/thread/${post.postId}`, query: { page: 0 } }"
       class="flex cursor-pointer flex-col gap-3 px-3 py-3"
     >
       <aside class="flex items-center gap-2">

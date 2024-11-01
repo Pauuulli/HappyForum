@@ -21,7 +21,7 @@ onUnmounted(() => window.removeEventListener("scroll", onScroll));
 
 <template>
   <header
-    class="fixed top-0 z-10 flex h-12 w-full items-center gap-3 border-b bg-white transition-transform duration-200"
+    class="fixed top-0 z-20 flex h-12 w-full items-center gap-3 border-b bg-white transition-transform duration-200"
     :class="{ '-translate-y-full': !visible }"
   >
     <NuxtLink :to="`/category/${post.catId}`" class="button cursor-pointer">

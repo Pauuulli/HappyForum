@@ -1,4 +1,7 @@
 <script setup lang="ts">
+const appStore = useAppStore();
+const authStore = useAuthStore();
+
 const basePath = "/category";
 const sections: Record<string, { text: string; href: string }[]> = {
   "": [
@@ -6,7 +9,6 @@ const sections: Record<string, { text: string; href: string }[]> = {
     { text: "源神台", href: `${basePath}/2` },
   ],
 };
-const appStore = useAppStore();
 </script>
 
 <template>
@@ -27,9 +29,14 @@ const appStore = useAppStore();
         <i class="pi pi-clock"></i>
         History
       </button>
-      <button class="button mt-2" @click="appStore.loginDialogVisible = true">
+      <button
+        class="button mt-2"
+        :disabled="authStore.isLoggedIn"
+        :class="{ 'button-inactive': authStore.isLoggedIn }"
+        @click="appStore.loginDialogVisible = true"
+      >
         <i class="pi pi-user"></i>
-        Login
+        {{ authStore.isLoggedIn ? authStore.getUserName() : "Login" }}
       </button>
     </div>
 
@@ -48,5 +55,9 @@ const appStore = useAppStore();
 <style scoped>
 .button {
   @apply flex items-center gap-6 text-lg transition-colors hover:text-yellow-400;
+}
+
+.button-inactive {
+  @apply hover:text-black;
 }
 </style>

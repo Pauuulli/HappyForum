@@ -3,7 +3,7 @@
 
 <template>
   <AppMenu />
-  <main class="pb-12">
+  <main>
     <slot />
   </main>
   <AppLoading />

@@ -33,5 +33,9 @@ export const useAuthStore = defineStore("authStore", () => {
     localStorage.setItem("USER_EXP", String(exp));
   }
 
-  return { isLoggedIn, login, logout, refreshToken };
+  function getUserName() {
+    return isLoggedIn.value ? localStorage.getItem("USER_NAME") : undefined;
+  }
+
+  return { isLoggedIn, login, logout, refreshToken, getUserName };
 });
