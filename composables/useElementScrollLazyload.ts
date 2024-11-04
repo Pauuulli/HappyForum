@@ -1,4 +1,4 @@
-export function useScroll(
+export function useElementScrollLazyload(
   container: Ref<HTMLElement | undefined>,
   minOffset: number,
   onScrollToEnd: () => Promise<any>,

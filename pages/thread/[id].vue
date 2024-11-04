@@ -1,12 +1,14 @@
 <script setup lang="ts">
-interface CommentPage {
-  elem: HTMLElement | undefined;
-  comments: Comment[];
-}
-
 import { array, object, date, number } from "yup";
+import { useThreadScroll } from "~/composables/thread/useThreadScroll";
 import { FOOTER_HEIGHT } from "~/constants/layout";
-import type { Post, Comment, Overlay } from "~/ts-type/models/thread";
+import type { PaginatedData } from "~/ts-type/models/pagination";
+import type {
+  Post,
+  Comment,
+  Overlay,
+  CommentPage,
+} from "~/ts-type/models/thread";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,11 +16,10 @@ const { isAppMenuVisible } = storeToRefs(useAppStore());
 const postId = computed(() => route.params.id as string);
 const { onVote } = useThreadComment(postId.value);
 
-const pageCurr = computed(() => {
+const pageCurrNumber = computed(() => {
   const pageQry = route.query.page;
   return typeof pageQry != "string" || isNaN(+pageQry) ? 0 : parseInt(pageQry);
 });
-// const pageFirst = pageCurr.value;
 
 const commentSchema = object({
   createdAt: date(),
@@ -30,16 +31,18 @@ const commentSchema = object({
 const { data: postRaw } = await useFetch(`/api/post/${postId.value}`);
 if (!postRaw.value) throw createError({ statusCode: 404 });
 
-const { data: commentsPaginated, error: commentsErr } = await useFetch(
-  `/api/post/${postId.value}/comments`,
-  {
-    query: {
-      page: pageCurr.value,
-    },
+const { data: commentsFirstPagePaginated, error: commentsErr } = await useFetch<
+  PaginatedData<Comment[]>
+>(`/api/post/${postId.value}/comments`, {
+  query: {
+    page: pageCurrNumber.value,
   },
-);
+});
 if (commentsErr.value != null) throw createError("Server Error");
-if (pageCurr.value != 0 && commentsPaginated.value!.data.length == 0)
+if (
+  pageCurrNumber.value != 0 &&
+  commentsFirstPagePaginated.value!.data.length == 0
+)
   throw createError({ statusCode: 404 });
 
 const post = ref(
@@ -48,34 +51,28 @@ const post = ref(
     : undefined,
 );
 
-const commentsPages = ref<CommentPage[]>(
-  commentsPaginated.value
-    ? [
-        {
-          elem: undefined,
-          comments: array(commentSchema).cast(
-            commentsPaginated.value.data,
-          ) as Comment[],
-        },
-      ]
-    : [],
-);
+const commentsPages = ref<CommentPage[]>([
+  {
+    comments: commentsFirstPagePaginated.value!.data,
+    page: commentsFirstPagePaginated.value!.pagination.currentPage,
+  },
+]);
 
-const pagination = computed(() => commentsPaginated.value!.pagination);
+const pagination = ref(commentsFirstPagePaginated.value!.pagination);
+
+const { scrollToTop } = useThreadScroll(
+  commentsPages,
+  pageCurrNumber,
+  pagination,
+  loadCommentsAndUpdatePagination,
+  changeUrlPage,
+);
 
 const overlay = ref<Overlay>({
   visible: false,
   isLightMode: false,
 });
 
-const pageOpts = computed(() =>
-  new Array(pagination.value.totalPages).map((_, page) => ({
-    label: `Page ${page + 1}`,
-    value: page,
-  })),
-);
-
-const virtualPageCurr = ref(0);
 const isReplyVisible = ref(false);
 
 function onViewReply(comment: Comment) {
@@ -84,37 +81,83 @@ function onViewReply(comment: Comment) {
 }
 
 async function onRefresh() {
-  commentsPaginated.value = await api(`/api/post/${postId.value}/comments`, {
-    query: {
-      page: pageCurr.value,
-    },
-  });
+  const pageCurr = commentsPages.value.find(
+    (cp) => cp.page == pageCurrNumber.value,
+  )!;
+
+  const comments = await loadCommentsAndUpdatePagination(pageCurrNumber.value);
+  pageCurr.comments = comments;
 }
 
 async function onPageChange(newPage: number) {
-  router.push({ path: `/thread/${postId.value}`, query: { page: newPage } });
+  // console.log(`newPage: ${newPage}, curr: ${pageCurrNumber.value}`);
+  if (newPage == pageCurrNumber.value) return;
+
+  const target = commentsPages.value.find((cp) => cp.page == newPage);
+  if (target) {
+    scrollToTop(target.elem!);
+    changeUrlPage(newPage);
+    return;
+  }
+
+  const comments = await loadCommentsAndUpdatePagination(newPage);
+  const newCommentsPage = { comments, page: newPage } as CommentPage;
+
+  if (
+    newPage == pageCurrNumber.value - 1 ||
+    newPage == pageCurrNumber.value + 1
+  ) {
+    if (newPage == pageCurrNumber.value - 1)
+      commentsPages.value.unshift(newCommentsPage);
+    else commentsPages.value.push(newCommentsPage);
+  } else {
+    commentsPages.value = [newCommentsPage];
+  }
+
+  changeUrlPage(newPage);
+
+  await nextTick();
+  scrollToTop(newCommentsPage.elem!);
 }
 
-async function onScrollToEnd() {}
+function registerPageRef(el: unknown, page: number) {
+  const target = commentsPages.value.find((cp) => cp.page == page)!;
+  if (el instanceof HTMLElement) target.elem = el;
+}
 
-function registerPageRef(el: unknown, idx: number) {
-  if (el instanceof HTMLElement) commentsPages.value[idx].elem = el;
+async function changeUrlPage(page: number) {
+  router.push({ path: `/thread/${postId.value}`, query: { page } });
+}
+
+async function loadCommentsAndUpdatePagination(page: number) {
+  const { data, pagination: newPg } = await api<PaginatedData<Comment[]>>(
+    `/api/post/${postId.value}/comments`,
+    {
+      query: {
+        page,
+      },
+    },
+  );
+  pagination.value = newPg;
+  return data;
 }
 </script>
 
 <template>
   <template v-if="post">
     <ThreadHeader :post="post" />
-    <div :ref="(el) => registerPageRef(el, 0)">
+    <div :ref="(el) => registerPageRef(el, commentsPages[0].page)">
       <ThreadPagination
-        :page-num="pageCurr"
-        :pages="pageOpts"
+        :page-num="commentsPages[0].page"
+        :total-pages="pagination.totalPages"
         class="mt-12"
         @page-change="onPageChange"
       />
+      <!-- <p>{{ commentsPages.map((cp) => cp.elem) }}</p>
+      <Button @click="commentsPages[1].elem?.scrollIntoView()">Test</Button> -->
       <article class="flex flex-col gap-3 bg-gray-100">
         <ThreadComment
-          v-if="pageCurr == 0"
+          v-if="commentsPages[0].page == 0"
           :item="post"
           :idx="-1"
           @vote="onVote"
@@ -129,14 +172,18 @@ function registerPageRef(el: unknown, idx: number) {
       </article>
     </div>
     <div
-      v-for="(commentPage, pageIdx) in commentsPages.slice(1)"
-      :key="pageIdx"
-      :ref="(el) => registerPageRef(el, pageIdx + 1)"
+      v-for="{ page, comments } in commentsPages.slice(1)"
+      :key="page"
+      :ref="(el) => registerPageRef(el, page)"
     >
-      <ThreadPagination :page-num="pageCurr + pageIdx + 1" :pages="pageOpts" />
+      <ThreadPagination
+        :page-num="page"
+        :total-pages="pagination.totalPages"
+        @page-change="onPageChange"
+      />
       <article class="flex flex-col gap-3 bg-gray-100">
         <ThreadComment
-          v-for="comment in commentPage.comments"
+          v-for="comment in comments"
           :key="comment.commentId"
           :item="comment"
           @vote="onVote"
@@ -145,7 +192,10 @@ function registerPageRef(el: unknown, idx: number) {
       </article>
     </div>
     <!-- Loading Spinner -->
-    <div class="flex h-48 items-center justify-center">
+    <div
+      v-if="pageCurrNumber < pagination.totalPages - 1"
+      class="flex h-48 items-center justify-center"
+    >
       <ProgressSpinner
         style="width: 50px; height: 50px"
         strokeWidth="8"
@@ -155,6 +205,7 @@ function registerPageRef(el: unknown, idx: number) {
       />
     </div>
     <div
+      v-else
       class="flex h-16 items-center justify-center bg-gray-100 text-center text-primary"
       :style="{ 'margin-bottom': FOOTER_HEIGHT }"
     >

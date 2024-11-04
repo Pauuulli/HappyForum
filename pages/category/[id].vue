@@ -19,7 +19,7 @@ const route = useRoute();
 const { isAppMenuVisible, isAppLoadingVisible } = storeToRefs(useAppStore());
 
 const postContainerRef = ref<HTMLDivElement>();
-useScroll(postContainerRef, 307, onScrollToEnd);
+useElementScrollLazyload(postContainerRef, 307, onScrollToEnd);
 const catId = computed(() => route.params.id as string);
 const { data: category } = await useFetch<Category>(
   `/api/category/${catId.value}`,

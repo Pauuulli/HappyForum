@@ -33,4 +33,10 @@ interface VoteDetails {
   voted: string;
 }
 
-export type { Post, Comment, Overlay, VoteDetails };
+interface CommentPage {
+  comments: Comment[];
+  page: number;
+  elem?: HTMLElement;
+}
+
+export type { Post, Comment, Overlay, VoteDetails, CommentPage };
