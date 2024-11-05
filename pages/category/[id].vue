@@ -49,7 +49,7 @@ const isDialogCreateVisible = ref(false);
 const isSkeletonsVisible = computed(
   () =>
     pagination.value &&
-    pagination.value.currentPage != pagination.value.totalPages - 1,
+    pagination.value.currentPage < pagination.value.totalPages - 1,
 );
 
 async function onRefresh() {

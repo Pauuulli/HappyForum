@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { array, object, date, number } from "yup";
+import { useThreadOverlay } from "~/composables/thread/useThreadOverlay";
 import { useThreadScroll } from "~/composables/thread/useThreadScroll";
 import { FOOTER_HEIGHT } from "~/constants/layout";
 import type { PaginatedData } from "~/ts-type/models/pagination";
@@ -28,8 +29,8 @@ const commentSchema = object({
   childCount: number(),
 });
 
-const { data: postRaw } = await useFetch(`/api/post/${postId.value}`);
-if (!postRaw.value) throw createError({ statusCode: 404 });
+const { data: post } = await useFetch<Post>(`/api/post/${postId.value}`);
+if (!post.value) throw createError({ statusCode: 404 });
 
 const { data: commentsFirstPagePaginated, error: commentsErr } = await useFetch<
   PaginatedData<Comment[]>
@@ -45,20 +46,15 @@ if (
 )
   throw createError({ statusCode: 404 });
 
-const post = ref(
-  postRaw.value
-    ? ({ ...commentSchema.cast(postRaw.value), postId: postId.value } as Post)
-    : undefined,
-);
-
 const commentsPages = ref<CommentPage[]>([
   {
-    comments: commentsFirstPagePaginated.value!.data,
+    comments: castComment(commentsFirstPagePaginated.value!.data),
     page: commentsFirstPagePaginated.value!.pagination.currentPage,
   },
 ]);
 
 const pagination = ref(commentsFirstPagePaginated.value!.pagination);
+const commentId = ref();
 
 const { scrollToTop } = useThreadScroll(
   commentsPages,
@@ -68,17 +64,10 @@ const { scrollToTop } = useThreadScroll(
   changeUrlPage,
 );
 
-const overlay = ref<Overlay>({
-  visible: false,
-  isLightMode: false,
-});
+const { overlay, viewOverlayDetailed, viewOverlayLight, closeOverlay, goPage: goOverlayPage, onViewOverlayReply } =
+  useThreadOverlay(postId);
 
 const isReplyVisible = ref(false);
-
-function onViewReply(comment: Comment) {
-  overlay.value.visible = true;
-  overlay.value.comment = comment;
-}
 
 async function onRefresh() {
   const pageCurr = commentsPages.value.find(
@@ -139,42 +128,32 @@ async function loadCommentsAndUpdatePagination(page: number) {
     },
   );
   pagination.value = newPg;
-  return data;
+  return castComment(data);
+}
+
+function onReplyComment(comment: Comment) {
+  isReplyVisible.value = true;
+  commentId.value = comment.commentId;
+}
+
+function onReplyPost() {
+  isReplyVisible.value = true;
+  commentId.value = undefined;
+}
+
+function castComment(value: Object) {
+  return array(commentSchema).cast(value) as Comment[];
 }
 </script>
 
 <template>
   <template v-if="post">
     <ThreadHeader :post="post" />
-    <div :ref="(el) => registerPageRef(el, commentsPages[0].page)">
-      <ThreadPagination
-        :page-num="commentsPages[0].page"
-        :total-pages="pagination.totalPages"
-        class="mt-12"
-        @page-change="onPageChange"
-      />
-      <!-- <p>{{ commentsPages.map((cp) => cp.elem) }}</p>
-      <Button @click="commentsPages[1].elem?.scrollIntoView()">Test</Button> -->
-      <article class="flex flex-col gap-3 bg-gray-100">
-        <ThreadComment
-          v-if="commentsPages[0].page == 0"
-          :item="post"
-          :idx="-1"
-          @vote="onVote"
-        />
-        <ThreadComment
-          v-for="comment in commentsPages[0].comments"
-          :key="comment.commentId"
-          :item="comment"
-          @vote="onVote"
-          @view-reply="onViewReply"
-        />
-      </article>
-    </div>
     <div
-      v-for="{ page, comments } in commentsPages.slice(1)"
+      v-for="{ page, comments } in commentsPages"
       :key="page"
       :ref="(el) => registerPageRef(el, page)"
+      class="mt-12"
     >
       <ThreadPagination
         :page-num="page"
@@ -185,9 +164,11 @@ async function loadCommentsAndUpdatePagination(page: number) {
         <ThreadComment
           v-for="comment in comments"
           :key="comment.commentId"
-          :item="comment"
+          :comment="comment"
           @vote="onVote"
-          @view-reply="onViewReply"
+          @view-reply="viewOverlayDetailed"
+          @reply="onReplyComment"
+          @view-parent="viewOverlayLight"
         />
       </article>
     </div>
@@ -214,10 +195,15 @@ async function loadCommentsAndUpdatePagination(page: number) {
     <AppFooter>
       <AppFooterButton icon="pi pi-bars" @click="isAppMenuVisible = true" />
       <AppFooterButton icon="pi pi-refresh" @click="onRefresh" />
-      <AppFooterButton icon="pi pi-reply" @click="isReplyVisible = true" />
+      <AppFooterButton icon="pi pi-reply" @click="onReplyPost" />
     </AppFooter>
 
-    <ThreadOverlay v-model="overlay" :post-id="postId" />
-    <ThreadReply v-model="isReplyVisible" :post-id="postId" />
+    <ThreadOverlay v-if="overlay" :overlay="overlay" :post-id="postId" @view-reply="onViewOverlayReply" @go-page="goOverlayPage" @close="closeOverlay" />
+    <ThreadReply
+      v-model="isReplyVisible"
+      :post-id="postId"
+      :comment-id="commentId"
+      @replied="onRefresh"
+    />
   </template>
 </template>

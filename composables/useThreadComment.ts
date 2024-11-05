@@ -1,14 +1,10 @@
 import type { Post, Comment, VoteDetails } from "~/ts-type/models/thread";
-import { isComment } from "~/ts-type/predicates/thread";
 
 export function useThreadComment(postId: string) {
-  async function onVote(item: Comment | Post, choice: 1 | 2) {
-    console.log('called');
-    const isCmt = isComment(item);
+  async function onVote(item: Comment, choice: 1 | 2) {
+    console.log("called");
 
-    const url = isCmt
-      ? `/api/post/${postId}/comments/${item.commentId}/vote`
-      : `/api/post/${postId}/vote`;
+    const url = `/api/post/${postId}/comments/${item.commentId}/vote`;
 
     const voteDetails = await api<VoteDetails>(url, {
       method: "POST",

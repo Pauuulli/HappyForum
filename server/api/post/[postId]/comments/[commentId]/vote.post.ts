@@ -28,7 +28,7 @@ export default authEventHandler(async (evt, userId) => {
 
   async function getLatestVote() {
     const qry = `
-      SELECT * FROM get_vote_details('comments', $2) WHERE id = $1
+      SELECT * FROM get_vote_details($2) WHERE id = $1
     `;
 
     const {

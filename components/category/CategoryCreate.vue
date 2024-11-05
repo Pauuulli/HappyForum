@@ -8,6 +8,8 @@ const emit = defineEmits<{
   (e: "created"): void;
 }>();
 
+const toast = useToast();
+
 const title = ref("");
 const content = ref("");
 const isLoading = ref(false);
@@ -30,6 +32,14 @@ async function onCreate() {
   } finally {
     isLoading.value = false;
   }
+
+  toast.add({
+    severity: "success",
+    summary: "Successfully Created",
+    life: 3000,
+  });
+  title.value = "";
+  content.value = "";
   visible.value = false;
   emit("created");
 }
@@ -66,6 +76,5 @@ async function onCreate() {
         />
       </div>
     </form>
-    <p>{{ content }}</p>
   </Dialog>
 </template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const props = defineProps<{ postId: string }>();
+const props = defineProps<{ postId: string; commentId?: string }>();
 const visible = defineModel<boolean>({ required: true });
 
 const emit = defineEmits<{
-  (e: "reply"): void;
+  (e: "replied"): void;
 }>();
 
 const content = ref("");
@@ -11,11 +11,18 @@ const isLoading = ref(false);
 
 async function onReply() {
   isLoading.value = true;
+
+  const url = props.commentId
+    ? `/api/post/${props.postId}/comments/${props.commentId}/reply`
+    : `/api/post/${props.postId}/reply`;
   try {
-    await api(`/api/post/${props.postId}/reply`, {
+    await api(url, {
       method: "POST",
       body: { content: content.value },
     });
+
+    visible.value = false;
+    emit("replied");
   } finally {
     isLoading.value = false;
   }
@@ -32,7 +39,7 @@ async function onReply() {
         @click="onReply"
         :disabled="isLoading"
       />
-      <Button label="Cancel" outlined />
+      <Button label="Cancel" outlined @click="visible = false" />
     </div>
   </Dialog>
 </template>

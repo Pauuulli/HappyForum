@@ -12,9 +12,9 @@ export function useThreadScroll(
   let lastScrollY = -1;
   const headerHeight = 48;
 
-  // onMounted(() => window.addEventListener("scroll", onScroll));
+  onMounted(() => window.addEventListener("scroll", onScroll));
 
-  // onUnmounted(() => window.removeEventListener("scroll", onScroll));
+  onUnmounted(() => window.removeEventListener("scroll", onScroll));
 
   async function onScroll() {
     window.removeEventListener("scroll", onScroll);
@@ -58,14 +58,14 @@ export function useThreadScroll(
   }
 
   function scrollToTop(elem: HTMLElement) {
-    // window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("scroll", onScroll);
 
     const { y: elemY } = elem.getBoundingClientRect();
     const windowY = window.scrollY;
 
     window.scrollTo({ top: windowY + elemY - headerHeight });
 
-    // window.addEventListener("scroll", onScroll)
+    setTimeout(() => window.addEventListener("scroll", onScroll), 0);
   }
 
   return { scrollToTop };

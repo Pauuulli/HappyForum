@@ -24,7 +24,6 @@ function onPageChange(page: number) {
 </script>
 
 <template>
-  <p>{{ pageOpts }}</p>
   <div class="flex items-center justify-around bg-gray-100 p-6">
     <button
       :disabled="pageNum == 0"

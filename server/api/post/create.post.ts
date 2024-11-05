@@ -34,14 +34,32 @@ async function createNewPost(post: Post & { userId: string }) {
   let { title, catId, userId, content } = post;
   content = dompurify.sanitize(content);
 
-  const newPostQry = `
-    INSERT INTO posts(title, cat_id, content, user_id)
-    VALUES($1, $2, $3, $4)
-    RETURNING post_id;
-    `;
-  const {
-    rows: [{ post_id }],
-  } = await pool.query(newPostQry, [title, catId, content, userId]);
+  const client = await pool.connect();
 
-  return post_id;
+  try {
+    await client.query("BEGIN");
+
+    const newPostQry = `
+      INSERT INTO posts(title, cat_id, user_id)
+      VALUES($1, $2, $3)
+      RETURNING post_id;
+      `;
+    const {
+      rows: [{ post_id }],
+    } = await client.query(newPostQry, [title, catId, userId]);
+
+    const cmtQry = `
+      INSERT INTO comments(content, user_id, post_id)
+      VALUES($1, $2, $3);
+    `;
+    await client.query(cmtQry, [content, userId, post_id]);
+
+    await client.query("COMMIT");
+    return post_id;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }

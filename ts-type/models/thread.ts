@@ -1,30 +1,35 @@
-interface Base {
+interface Post {
+  title: string;
+  catId: number;
+}
+
+interface Comment {
+  commentId: string;
+  commentOrder: number;
   publisher: string;
   createdAt: Date;
   content: string;
   upVotes: number;
   downVotes: number;
   voted: "up" | "down" | null;
+  parents: { commentId: number; content: string }[];
+  children: { commentId: number }[];
 }
 
-type Post = Base & {
-  title: string;
-  catId: string;
-  postId: string;
-};
+interface OverlayLight {
+  isLight: true;
+  comment: Comment;
+}
 
-type Comment = Base & {
-  commentId: string;
-  commentOrder: number;
-  parents: { commentId: string; content: string }[];
-  children: { commentId: string }[];
-};
+interface OverlayDetailed {
+  isLight: false;
+  commentHistory: { comment: Comment; children: Comment[] }[];
+  currCommentIdx: number;
+}
 
-interface Overlay {
+type Overlay = (OverlayLight | OverlayDetailed) & {
   visible: boolean;
-  comment?: Comment;
-  isLightMode: boolean;
-}
+};
 
 interface VoteDetails {
   id: number;
