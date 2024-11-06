@@ -23,8 +23,8 @@ const nestedAncestors = computed<Parent[]>(() => props.ancestors.slice(1));
       @click="$emit('view', currParent.commentId)"
     />
     <div class="flex flex-col justify-center gap-3">
-      <ThreadCommentQuote :ancestors="nestedAncestors" />
-      {{ currParent.content }}
+      <ThreadCommentQuote v-if="nestedAncestors.length > 0" :ancestors="nestedAncestors" @view="$emit('view', $event)" />
+      <div v-html="currParent.content" />
     </div>
   </blockquote>
 </template>

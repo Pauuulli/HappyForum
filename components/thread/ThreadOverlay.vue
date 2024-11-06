@@ -1,23 +1,20 @@
 <script setup lang="ts">
 import type { Comment, Overlay } from "~/ts-type/models/thread";
 
-// interface ViewHistoryItem {
-//   comment: Comment;
-//   children: Comment[];
-// }
-
 const props = defineProps<{ postId: string; overlay: Overlay }>();
 
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "view-reply", parentCmt: Comment): void;
-  (e: "go-page", page: 1 | -1): void;
+  (e: "view-parent", commentId: number): void;
+  (e: "go-page", page: number): void;
 }>();
 
 const { onVote } = useThreadComment(props.postId);
 
 const threadCommentOn = {
   vote: onVote,
+  viewParent: (e: any) => emit("view-parent", e),
 };
 
 function onOverlayClick(e: Event) {
@@ -32,7 +29,7 @@ function onOverlayClick(e: Event) {
     class="fixed left-0 top-0 z-20 flex h-screen w-full items-center bg-gray-400/30"
     @click="onOverlayClick"
   >
-    <div v-if="overlay.isLight">
+    <div v-if="overlay.isLight" class="w-full">
       <ThreadComment
         :comment="overlay.comment"
         v-on="threadCommentOn"
@@ -49,12 +46,13 @@ function onOverlayClick(e: Event) {
           icon="pi pi-times"
           text
           class="text-black"
-          @click="overlay.visible = false"
+          @click="$emit('close')"
         />
       </div>
       <ThreadComment
         :comment="overlay.commentHistory[overlay.currCommentIdx].comment"
-        :show-reply-btn="false"
+        :show-children="false"
+        v-on="threadCommentOn"
         @view-reply="
           $emit(
             'view-reply',
@@ -68,6 +66,7 @@ function onOverlayClick(e: Event) {
             .children"
           :key="child.commentId"
           :comment="child"
+          :show-quote="false"
           v-on="threadCommentOn"
           @view-reply="$emit('view-reply', child)"
         />
@@ -76,7 +75,7 @@ function onOverlayClick(e: Event) {
         <Button
           icon="pi pi-arrow-left"
           :class="{ invisible: overlay.currCommentIdx == 0 }"
-          @click="$emit('go-page', -1)"
+          @click="$emit('go-page', overlay.currCommentIdx - 1)"
         />
         <Button
           icon="pi pi-arrow-right"
@@ -84,7 +83,7 @@ function onOverlayClick(e: Event) {
             invisible:
               overlay.currCommentIdx == overlay.commentHistory.length - 1,
           }"
-          @click="$emit('go-page', 1)"
+          @click="$emit('go-page', overlay.currCommentIdx + 1)"
         />
       </div>
     </div>

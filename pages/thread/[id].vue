@@ -29,6 +29,7 @@ const commentSchema = object({
   childCount: number(),
 });
 
+// Server data fetching
 const { data: post } = await useFetch<Post>(`/api/post/${postId.value}`);
 if (!post.value) throw createError({ statusCode: 404 });
 
@@ -45,6 +46,7 @@ if (
   commentsFirstPagePaginated.value!.data.length == 0
 )
   throw createError({ statusCode: 404 });
+// Server data fetching End
 
 const commentsPages = ref<CommentPage[]>([
   {
@@ -64,8 +66,14 @@ const { scrollToTop } = useThreadScroll(
   changeUrlPage,
 );
 
-const { overlay, viewOverlayDetailed, viewOverlayLight, closeOverlay, goPage: goOverlayPage, onViewOverlayReply } =
-  useThreadOverlay(postId);
+const {
+  overlay,
+  viewOverlayDetailed,
+  viewOverlayLight,
+  closeOverlay,
+  goPage: goOverlayPage,
+  onViewOverlayReply,
+} = useThreadOverlay(postId);
 
 const isReplyVisible = ref(false);
 
@@ -198,7 +206,15 @@ function castComment(value: Object) {
       <AppFooterButton icon="pi pi-reply" @click="onReplyPost" />
     </AppFooter>
 
-    <ThreadOverlay v-if="overlay" :overlay="overlay" :post-id="postId" @view-reply="onViewOverlayReply" @go-page="goOverlayPage" @close="closeOverlay" />
+    <ThreadOverlay
+      v-if="overlay"
+      :overlay="overlay"
+      :post-id="postId"
+      @view-reply="onViewOverlayReply"
+      @view-parent="viewOverlayLight"
+      @go-page="goOverlayPage"
+      @close="closeOverlay"
+    />
     <ThreadReply
       v-model="isReplyVisible"
       :post-id="postId"

@@ -8,6 +8,8 @@ async function api<T = any>(...args: FetchParams) {
   } catch (e) {
     if (isUnauthErr(e)) {
       const { loginDialogVisible } = storeToRefs(useAppStore());
+      const { clearLoginInfo } = useAuthStore();
+      clearLoginInfo();
       loginDialogVisible.value = true;
     }
     throw e;

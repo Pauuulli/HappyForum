@@ -2,9 +2,14 @@
 import type { Comment } from "~/ts-type/models/thread";
 import formatter from "~/utils/formatter";
 
-const props = defineProps<{
-  comment: Comment;
-}>();
+const props = withDefaults(
+  defineProps<{
+    comment: Comment;
+    showQuote?: boolean;
+    showChildren?: boolean;
+  }>(),
+  { showQuote: true, showChildren: true },
+);
 
 const emit = defineEmits<{
   (e: "view-reply", comment: Comment): void;
@@ -38,6 +43,7 @@ const childCount = computed(() => props.comment.children.length);
     </header>
     <!-- Ancestors -->
     <ThreadCommentQuote
+      v-if="showQuote"
       :ancestors="comment.parents"
       @view="$emit('view-parent', $event)"
     />
@@ -49,7 +55,7 @@ const childCount = computed(() => props.comment.children.length);
         <span class="mr-3 flex items-center">
           <button
             class="hover:text-black"
-            :class="{ 'pointer-events-none': comment.voted == 'up' }"
+            :class="{ 'pointer-events-none': comment.voted != null }"
             @click="$emit('vote', comment, 1)"
           >
             <i
@@ -62,7 +68,7 @@ const childCount = computed(() => props.comment.children.length);
         <span class="flex items-center">
           <button
             class="hover:text-black"
-            :class="{ 'pointer-events-none': comment.voted == 'down' }"
+            :class="{ 'pointer-events-none': comment.voted != null }"
             @click="$emit('vote', comment, 2)"
           >
             <i
@@ -74,7 +80,7 @@ const childCount = computed(() => props.comment.children.length);
         </span>
       </div>
       <button
-        v-if="childCount != 0"
+        v-if="showChildren && childCount != 0"
         class="group flex items-center rounded-lg bg-gray-100 p-2 text-sm text-secondary"
         @click="$emit('view-reply', comment)"
       >

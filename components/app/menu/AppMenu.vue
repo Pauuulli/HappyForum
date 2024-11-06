@@ -1,5 +1,5 @@
 <script setup lang="ts">
-//import Button from "primevue/button";
+const router = useRouter();
 
 const ANIMATION_DURATION = 300;
 
@@ -32,6 +32,11 @@ async function onLogout() {
     isAppLoadingVisible.value = false;
   }
 }
+
+function onHomeClick() {
+  router.push("/category/1");
+  isAppLoadingVisible.value = false;
+}
 </script>
 
 <template>
@@ -50,12 +55,9 @@ async function onLogout() {
       <aside
         class="flex w-14 flex-col items-center justify-between bg-gray-200 p-3"
       >
-        <Button icon="pi pi-android" />
+        <Button icon="pi pi-home" @click="onHomeClick" />
         <section class="flex w-full flex-col items-center gap-2">
           <Button v-if="isLoggedIn" icon="pi pi-sign-out" @click="onLogout" />
-          <Button icon="pi pi-android" />
-          <Button icon="pi pi-android" />
-          <Button icon="pi pi-android" />
         </section>
       </aside>
       <AppMenuNav class="grow" />

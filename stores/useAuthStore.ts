@@ -18,11 +18,7 @@ export const useAuthStore = defineStore("authStore", () => {
 
   async function logout() {
     await api("/api/user/logout", { method: "DELETE" });
-
-    localStorage.removeItem("USER_NAME");
-    localStorage.removeItem("USER_EXP");
-
-    isLoggedIn.value = false;
+    clearLoginInfo();
   }
 
   async function refreshToken() {
@@ -37,5 +33,19 @@ export const useAuthStore = defineStore("authStore", () => {
     return isLoggedIn.value ? localStorage.getItem("USER_NAME") : undefined;
   }
 
-  return { isLoggedIn, login, logout, refreshToken, getUserName };
+  function clearLoginInfo() {
+    localStorage.removeItem("USER_NAME");
+    localStorage.removeItem("USER_EXP");
+
+    isLoggedIn.value = false;
+  }
+
+  return {
+    isLoggedIn,
+    login,
+    logout,
+    refreshToken,
+    getUserName,
+    clearLoginInfo,
+  };
 });
