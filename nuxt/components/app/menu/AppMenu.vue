@@ -35,7 +35,7 @@ async function onLogout() {
 
 function onHomeClick() {
   router.push("/category/1");
-  isAppLoadingVisible.value = false;
+  visible.value = false;
 }
 </script>
 
