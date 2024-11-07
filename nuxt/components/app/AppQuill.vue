@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import Quill from "quill";
+import type Quill from "quill";
 import "quill/dist/quill.snow.css";
-import type Toolbar from "quill/modules/toolbar";
 
 const content = defineModel();
 
 const quillRef = ref<HTMLElement>();
-let quill: Quill | undefined;
+let quill: Quill;
+let QuillClass: typeof Quill;
 
 onMounted(async () => {
-  if (!quillRef.value) return;
+  if (!import.meta.client || !quillRef.value) return;
 
-  const Quill = (await import("quill")).default;
+  QuillClass = (await import("quill")).default;
 
   const toolbarOptions = [
     [{ size: ["small", false, "large", "huge"] }],
@@ -30,7 +30,7 @@ onMounted(async () => {
     // placeholder: "Compose an epic...",
     theme: "snow",
   };
-  quill = new Quill(quillRef.value, options);
+  quill = new QuillClass(quillRef.value, options);
 
   quill.on("text-change", handleTextChange);
 });
@@ -43,6 +43,7 @@ function handleImageBtnClick() {
   const fileInput = document.createElement("input");
   fileInput.type = "file";
   fileInput.multiple = true;
+  fileInput.setAttribute("accept", "image/*");
   fileInput.onchange = handleImageSelect;
 
   document.body.appendChild(fileInput);
@@ -56,24 +57,16 @@ async function handleImageSelect(evt: Event) {
   if (!files) return;
 
   const fileArr = Array.from(files);
-  // for(let i = 0; i)
-  // if (files && files.length > 0) {
-  //     //
-  //     const fileName = files[0].name; // Get the name of the first selected file
-  //     console.log('Selected file:', fileName);
-  // } else {
-  //     console.log('No file selected');
-  // }
-  fileArr.forEach(f => {
-    const range = quill!.getSelection()!;
-    const url = URL.createObjectURL(f);
-    quill!.insertEmbed(range?.index,)
-  })
+  for (const f of fileArr) {
+    if (!f.type.startsWith("image/")) continue;
 
-  console.log(fileArr);
+    const range = quill.getSelection(true);
+    const url =
+      "https://static9.depositphotos.com/1431107/1154/i/450/depositphotos_11542091-stock-photo-sample-stamp.jpg";
+    quill.insertEmbed(range.index, "image", url, QuillClass.sources.USER);
+    quill.setSelection(range.index + 1);
+  }
 }
-
-
 </script>
 
 <template>

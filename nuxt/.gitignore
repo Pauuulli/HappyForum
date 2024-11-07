@@ -22,3 +22,7 @@ logs
 .env
 .env.*
 !.env.example
+
+# Ignore all files in the images and videos upload directories
+/server/upload/images/*
+/server/upload/videos/*
