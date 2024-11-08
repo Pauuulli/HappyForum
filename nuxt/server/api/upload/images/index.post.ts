@@ -1,8 +1,9 @@
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
+import type { ImageUploadResult } from "~/ts-type/models/server/api/upload/image";
 
-export default authEventHandler(async (evt, userId) => {
+export default authEventHandler(async (evt) => {
   const formData = await readFormData(evt);
   const entries = Array.from(formData.entries());
 
@@ -26,12 +27,12 @@ export default authEventHandler(async (evt, userId) => {
   const writeResult = await Promise.allSettled(writeOps);
 
   const result = writeResult.map((wr) => {
-    const r: any = { status: wr.status };
-    if (wr.status == "fulfilled") r.imageId = wr.value;
-    return r;
+    if (wr.status == "fulfilled")
+      return { status: wr.status, imageName: wr.value };
+    return { status: wr.status };
   });
 
-  return result;
+  return result as ImageUploadResult[];
 });
 
 function generateId() {

@@ -11,7 +11,7 @@ const emit = defineEmits<{
 const toast = useToast();
 
 const title = ref("");
-const content = ref("");
+const { content, deleteUnusedImages, onImageUploaded } = useQuill();
 const isLoading = ref(false);
 
 const isCreateDisabled = computed(
@@ -41,6 +41,7 @@ async function onCreate() {
   title.value = "";
   content.value = "";
   visible.value = false;
+  deleteUnusedImages();
   emit("created");
 }
 </script>
@@ -54,7 +55,11 @@ async function onCreate() {
   >
     <form class="flex flex-col gap-5">
       <InputText v-model="title" :maxlength="200" placeholder="Title" />
-      <Editor v-model="content" editor-style="height: 12rem" />
+      <AppQuill
+        v-model="content"
+        class="h-48"
+        @image-uploaded="onImageUploaded"
+      />
       <small
         class="text-end text-base font-semibold"
         :class="{ 'text-red-500': content.length > 5000 }"

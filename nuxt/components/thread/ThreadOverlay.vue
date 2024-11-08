@@ -26,7 +26,7 @@ function onOverlayClick(e: Event) {
 <template>
   <div
     v-if="overlay.visible"
-    class="fixed left-0 top-0 z-20 flex h-screen w-full items-center bg-gray-400/30"
+    class="fixed left-0 top-0 z-20 flex h-screen w-full items-center overflow-y-auto bg-gray-400/30"
     @click="onOverlayClick"
   >
     <div v-if="overlay.isLight" class="w-full">

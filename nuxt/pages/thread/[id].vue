@@ -87,7 +87,6 @@ async function onRefresh() {
 }
 
 async function onPageChange(newPage: number) {
-  // console.log(`newPage: ${newPage}, curr: ${pageCurrNumber.value}`);
   if (newPage == pageCurrNumber.value) return;
 
   const target = commentsPages.value.find((cp) => cp.page == newPage);

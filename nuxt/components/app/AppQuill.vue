@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type Quill from "quill";
+import type { Delta } from "quill/core";
 import "quill/dist/quill.snow.css";
+import type { ImageUploadResult } from "~/ts-type/models/server/api/upload/image";
 
 const content = defineModel();
 
+const emit = defineEmits<{
+  (e: "image-uploaded", imageName: string): void;
+}>();
+
+const toast = useToast();
 const quillRef = ref<HTMLElement>();
 let quill: Quill;
 let QuillClass: typeof Quill;
@@ -35,8 +42,8 @@ onMounted(async () => {
   quill.on("text-change", handleTextChange);
 });
 
-function handleTextChange() {
-  content.value = quill!.getSemanticHTML();
+function handleTextChange(delta: Delta) {
+  content.value = quill.getSemanticHTML();
 }
 
 function handleImageBtnClick() {
@@ -57,18 +64,51 @@ async function handleImageSelect(evt: Event) {
   if (!files) return;
 
   const fileArr = Array.from(files);
-  for (const f of fileArr) {
-    if (!f.type.startsWith("image/")) continue;
 
+  const formData = new FormData();
+  fileArr
+    .filter((f) => f.type.startsWith("image/"))
+    .forEach((f) => formData.append("", f));
+
+  const results = await api<ImageUploadResult[]>("/api/upload/images", {
+    method: "POST",
+    body: formData,
+  });
+  const successUploads = results.filter((r) => r.status == "fulfilled");
+  successUploads.forEach(({ status, imageName }) => {
     const range = quill.getSelection(true);
-    const url =
-      "https://static9.depositphotos.com/1431107/1154/i/450/depositphotos_11542091-stock-photo-sample-stamp.jpg";
-    quill.insertEmbed(range.index, "image", url, QuillClass.sources.USER);
+    const imagePath = `/api/assets/image/${imageName}`;
+    quill.insertEmbed(range.index, "image", imagePath, QuillClass.sources.USER);
     quill.setSelection(range.index + 1);
+
+    emit("image-uploaded", imageName);
+  });
+
+  if (results.length != successUploads.length) {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Some images failed to upload.",
+      life: 3000,
+    });
   }
 }
+
+// function handleDeleteImage
 </script>
 
 <template>
-  <div ref="quillRef" />
+  <div>
+    <div ref="quillRef" />
+  </div>
 </template>
+
+<style>
+.ql-container {
+  @apply h-[calc(100%-42.84px)] rounded-b-lg;
+}
+
+.ql-toolbar {
+  @apply rounded-t-lg;
+}
+</style>

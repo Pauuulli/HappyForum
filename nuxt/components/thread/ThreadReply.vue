@@ -1,12 +1,15 @@
 <script setup lang="ts">
-const props = defineProps<{ postId: string; commentId?: string }>();
+const props = defineProps<{
+  postId: string | number;
+  commentId?: string | number;
+}>();
 const visible = defineModel<boolean>({ required: true });
 
 const emit = defineEmits<{
   (e: "replied"): void;
 }>();
 
-const content = ref("");
+const { content, deleteUnusedImages, onImageUploaded } = useQuill();
 const isLoading = ref(false);
 
 async function onReply() {
@@ -20,18 +23,23 @@ async function onReply() {
       method: "POST",
       body: { content: content.value },
     });
-
-    visible.value = false;
-    emit("replied");
   } finally {
     isLoading.value = false;
   }
+
+  deleteUnusedImages();
+  visible.value = false;
+  emit("replied");
 }
 </script>
 
 <template>
   <Dialog v-model:visible="visible" header="Reply" class="w-full">
-    <Editor v-model="content" editor-style="height: 12rem" />
+    <AppQuill
+      v-model="content"
+      class="h-48"
+      @image-uploaded="onImageUploaded"
+    />
     <div class="mt-5 flex justify-end gap-3">
       <Button
         icon="pi pi-send"
