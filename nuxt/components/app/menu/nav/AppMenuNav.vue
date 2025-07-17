@@ -5,8 +5,8 @@ const authStore = useAuthStore();
 const basePath = "/category";
 const sections: Record<string, { text: string; href: string }[]> = {
   "": [
-    { text: "CCTOY", href: `${basePath}/1` },
-    { text: "源神台", href: `${basePath}/2` },
+    { text: "時事台", href: `${basePath}/1` },
+    { text: "財經台", href: `${basePath}/2` },
   ],
 };
 </script>
